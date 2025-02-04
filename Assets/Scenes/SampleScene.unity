@@ -241,7 +241,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -316,7 +316,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 1, z: -4.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -458,7 +458,7 @@ Transform:
   m_GameObject: {fileID: 410087039}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 0, y: 3, z: -59.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -750,7 +750,7 @@ Transform:
   m_GameObject: {fileID: 832575517}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -50.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -770,6 +770,7 @@ GameObject:
   - component: {fileID: 1011924596}
   - component: {fileID: 1011924601}
   - component: {fileID: 1011924600}
+  - component: {fileID: 1011924602}
   m_Layer: 7
   m_Name: CuboJugador
   m_TagString: Untagged
@@ -878,6 +879,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 685727dc80731c642a2169f2464c9c6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentSteeringAction: 0
   maxVelocity: 4
   maxForce: 2
   rb: {fileID: 1011924601}
@@ -914,6 +916,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1011924602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1011924595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba41d3c10f8a2b446a2e2c1aec20e5f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  accumulatedTime: 0
+  interval: 1
+  lastTime: 0
+  contadorCorrutina: 0
 --- !u!1 &1051575828
 GameObject:
   m_ObjectHideFlags: 0
@@ -1047,7 +1065,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2081395414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1060,7 +1078,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa8d4814cfe6f624ebaac07f53cdee80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DetectionRadius: 11
+  DetectionRadius: 12
 --- !u!136 &2081395415
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1164,6 +1182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6248ef57e8967147a468809a5919b5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentSteeringAction: 0
   maxVelocity: 4
   maxForce: 2
   rb: {fileID: 2081395420}

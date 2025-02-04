@@ -51,6 +51,12 @@ public class Senses : MonoBehaviour
             // si quien chocó conmigo es un player, lo añado a las entidades que están en mi rango de visión.
             refEnemigosDetectados.Add(other.gameObject);
         }
+        // tenerlo como else hace que le dé prioridad al player.
+        else if(other.gameObject.layer == LayerMask.NameToLayer("Waypoints")) 
+        {
+            refEnemigosDetectados.Add(other.gameObject);
+        }
+
     }
 
     private void OnTriggerExit(Collider other)
@@ -62,6 +68,10 @@ public class Senses : MonoBehaviour
         if (other.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             // si quien chocó conmigo es un player, lo añado a las entidades que están en mi rango de visión.
+            refEnemigosDetectados.Remove(other.gameObject);
+        }
+        else if (other.gameObject.layer == LayerMask.NameToLayer("Waypoints"))
+        {
             refEnemigosDetectados.Remove(other.gameObject);
         }
     }

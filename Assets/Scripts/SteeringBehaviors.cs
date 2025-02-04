@@ -1,8 +1,65 @@
 using TMPro;
 using UnityEngine;
 
+/*#define SWITCH_OFF 0
+#define SWITCH_ON 1
+#define SWITCH_MEDIUM 2*/
+
 public class SteeringBehaviors : MonoBehaviour
 {
+    //public bool OnOrOff = false;
+    //public int SwitchState = (int)SwitchStatus.Off;
+
+    //public string SwitchStateString = "Off";
+
+    //public enum SwitchStatus : byte
+    //{
+    //    On,
+    //    Off,
+    //    Medium,
+    //    NotSoMuchButSomething
+    //}
+
+    /*public enum bitMask
+    {
+        mask1 = 1,
+        mask2 = 2,
+        mask3 = 4,
+        mask4 = 8,
+        mask5 = 16,
+        mask6 = 32,
+        mask7 = 64,
+        mask8 = 128,
+    >>
+    <<
+    }*/
+
+    long Value;
+
+    // VENTAJAS DE LOS ENUMS
+    // Legibilidad del código
+    // No hardcodear
+    // optimización
+
+    // Uso de un enum
+
+    //public enum SteeringBehaviorEnum
+    //{
+    //    Seek,
+    //    Flee,
+    //    Pursuit,
+    //    Evade
+    //}
+
+    //public SteeringBehaviorEnum currentSteeringBehavior;
+
+    public enum SteeringAction
+    {
+        Approach,  // seek y pursuit
+        Escape   // flee y evade
+    }
+
+    public SteeringAction currentSteeringAction = SteeringAction.Approach;
 
     // Posición
     // ya la tenemos a través del transform.position
@@ -28,6 +85,8 @@ public class SteeringBehaviors : MonoBehaviour
     // si queda tiempo vemos cómo quedaría con esta forma de implementarlo.
     // protected PlayerControllerRef = null; 
 
+
+
     public void SetEnemyReference(GameObject enemyRef)
     { 
         ReferenciaObjetivo = enemyRef;
@@ -41,6 +100,11 @@ public class SteeringBehaviors : MonoBehaviour
             {
                 Debug.Log("El enemigo referenciado actualmente no tiene Rigidbody. ¿Así debería ser?");
             }
+        }
+        // si NO hay un ReferenciaObjetivo, entonces le decimos que el targetRB es null también
+        else
+        {
+            targetRB = null;
         }
     }
 
@@ -110,6 +174,8 @@ public class SteeringBehaviors : MonoBehaviour
     {
         Vector3 steeringForce = Vector3.zero;
 
+
+
         // Vector3 steeringForce = Seek(ReferenciaEnemigo.transform.position);
 
 
@@ -118,27 +184,46 @@ public class SteeringBehaviors : MonoBehaviour
         // Solo aplicamos Pursuit si el objetivo que estamos persiguiendo tiene un Rigidbody.
         if (ReferenciaObjetivo != null)
         {
+
             if (targetRB != null)
             {
-                steeringForce = Pursuit(ReferenciaObjetivo.transform.position, targetRB.linearVelocity);
+                switch (currentSteeringAction)
+                {
+                    case SteeringAction.Approach:
+                        steeringForce = Pursuit(ReferenciaObjetivo.transform.position, targetRB.linearVelocity);
+                        break;
+                    case SteeringAction.Escape:
+                        steeringForce = Evade(ReferenciaObjetivo.transform.position, targetRB.linearVelocity);
+                        break;
+                }
             }
             else if (ReferenciaObjetivo != null)
             {
-                steeringForce = Seek(ReferenciaObjetivo.transform.position);
+                switch (currentSteeringAction)
+                {
+                    case SteeringAction.Approach:
+                        steeringForce = Seek(ReferenciaObjetivo.transform.position);
+                        break;
+                    case SteeringAction.Escape:
+                        steeringForce = Flee(ReferenciaObjetivo.transform.position);
+                        break;
+                }
             }
+            else
+            {
+                rb.linearVelocity = Vector3.zero;
+            }
+
+            // Debería estar aquí pero ahorita no hace nada, según yo.
+            steeringForce = Vector3.ClampMagnitude(steeringForce, maxForce);
+
+            rb.AddForce(steeringForce, ForceMode.Acceleration);
+
+            rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, maxVelocity);
+
+            if (rb.linearVelocity.magnitude > maxVelocity)
+                Debug.LogWarning(rb.linearVelocity);
         }
-        else
-        {
-            rb.linearVelocity = Vector3.zero;
-        }
-
-        // Debería estar aquí pero ahorita no hace nada, según yo.
-        steeringForce = Vector3.ClampMagnitude(steeringForce, maxForce);
-
-        rb.AddForce(steeringForce, ForceMode.Acceleration);
-
-        if(rb.linearVelocity.magnitude > maxVelocity)
-            Debug.LogWarning(rb.linearVelocity);
     }
 
     private void OnDrawGizmos()
@@ -152,31 +237,45 @@ public class SteeringBehaviors : MonoBehaviour
             if (targetRB != null)
             { targetCurrentVelocity = targetRB.linearVelocity; }
         }
-            
-        float LookAheadTime = (transform.position - targetPosition).magnitude / maxVelocity;
 
+        if (targetRB != null)  // solo dibujar lo del pursuit/evade si el objetivo tiene un rigidbody con velocidad.
+        {
 
-        Vector3 predictedPosition = targetPosition + targetCurrentVelocity * LookAheadTime;
+            Debug.Log(targetRB.gameObject.name);
+            if(ReferenciaObjetivo == null)
+            {
+                Debug.LogError("referencia objetivoi es null");
+            }
 
-        Gizmos.DrawCube(predictedPosition, Vector3.one);
+            float LookAheadTime = (transform.position - targetPosition).magnitude / maxVelocity;
 
-        Gizmos.DrawLine(transform.position, predictedPosition);
+            Vector3 predictedPosition = targetPosition + targetCurrentVelocity * LookAheadTime;
 
-        Gizmos.color = Color.red;
-        // Hacemos una línea de la velocidad que tiene este agente ahorita.
-        Gizmos.DrawLine (transform.position, transform.position + rb.linearVelocity.normalized * 3);
+            Gizmos.DrawCube(predictedPosition, Vector3.one);
 
-        // Dibujamos las fuerzas.
-        Gizmos.color = Color.green;
+            Gizmos.DrawLine(transform.position, predictedPosition);
+        }
+        else if (ReferenciaObjetivo != null)
+        {
+            // Si sí hay un objetivo, entonces dibujamos una línea hacia ese objetivo.
+            Gizmos.DrawLine(transform.position, ReferenciaObjetivo.transform.position);
+        }
 
-        Vector3 steeringForce = Vector3.zero;
+        //Gizmos.color = Color.red;
+        //// Hacemos una línea de la velocidad que tiene este agente ahorita.
+        //Gizmos.DrawLine (transform.position, transform.position + rb.linearVelocity.normalized * 3);
 
-        if (targetRB != null && ReferenciaObjetivo != null)
-            steeringForce = Pursuit(ReferenciaObjetivo.transform.position, targetCurrentVelocity);
+        //// Dibujamos las fuerzas.
+        //Gizmos.color = Color.green;
 
-        steeringForce = Vector3.ClampMagnitude(steeringForce, maxForce);
+        //Vector3 steeringForce = Vector3.zero;
 
-        Gizmos.DrawLine(transform.position, transform.position + steeringForce);
+        //if (targetRB != null && ReferenciaObjetivo != null)
+        //    steeringForce = Pursuit(ReferenciaObjetivo.transform.position, targetCurrentVelocity);
+
+        //steeringForce = Vector3.ClampMagnitude(steeringForce, maxForce);
+
+        //Gizmos.DrawLine(transform.position, transform.position + steeringForce);
 
     }
 
