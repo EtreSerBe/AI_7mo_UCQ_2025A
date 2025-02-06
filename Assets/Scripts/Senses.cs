@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,8 +8,14 @@ public class Senses : MonoBehaviour
 
     protected List<GameObject> refEnemigosDetectados = new List<GameObject>();
 
+    protected List<GameObject> refObstaculosDetectados = new List<GameObject>();
+
+    public List<GameObject> GetDetectedObstacles() { return refObstaculosDetectados; }
+
     // protected MonoBehaviour 
-    
+    //public LayerMask layerMask;
+
+
 
     // Manera #1
     // radio alrededor del dueño de este script en el cual se detectarán gameObjects.
@@ -31,6 +38,18 @@ public class Senses : MonoBehaviour
 
     public bool IsEnemyDetected() { return isEnemyDetected; }
 
+    private Coroutine CorrutinaDesalertar;
+
+    bool IsAlerted = false;
+
+    private IEnumerator Desalertar()
+    {
+        yield return new WaitForSeconds(5);
+
+        Debug.LogWarning("Pasamos a desalerta");
+        IsAlerted = false;
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -46,15 +65,25 @@ public class Senses : MonoBehaviour
         Debug.Log($"entró a colisión con: {other.gameObject.name}");
         // si alguien choca contra nuestro visionColliderSphere,
         // entonces alguien acaba de entrar a nuestro rango de visión.
+
         if(other.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
+            //Debug.Log(layerMask.ToString());
+            //Debug.Log( LayerMask.GetMask(layerMask.ToString()));
             // si quien chocó conmigo es un player, lo añado a las entidades que están en mi rango de visión.
             refEnemigosDetectados.Add(other.gameObject);
+            // Si detectamos de nuevo al player, pues le decimos que cancele el desalertar
+            IsAlerted = true;
+            StopCoroutine( CorrutinaDesalertar ); 
         }
         // tenerlo como else hace que le dé prioridad al player.
         else if(other.gameObject.layer == LayerMask.NameToLayer("Waypoints")) 
         {
             refEnemigosDetectados.Add(other.gameObject);
+        }
+        else if (other.gameObject.layer == LayerMask.NameToLayer("Obstacle"))
+        {
+            refObstaculosDetectados.Add(other.gameObject);
         }
 
     }
@@ -69,10 +98,15 @@ public class Senses : MonoBehaviour
         {
             // si quien chocó conmigo es un player, lo añado a las entidades que están en mi rango de visión.
             refEnemigosDetectados.Remove(other.gameObject);
+            CorrutinaDesalertar = StartCoroutine(Desalertar());
         }
         else if (other.gameObject.layer == LayerMask.NameToLayer("Waypoints"))
         {
             refEnemigosDetectados.Remove(other.gameObject);
+        }
+        else if (other.gameObject.layer == LayerMask.NameToLayer("Obstacle"))
+        {
+            refObstaculosDetectados.Remove(other.gameObject);
         }
     }
 

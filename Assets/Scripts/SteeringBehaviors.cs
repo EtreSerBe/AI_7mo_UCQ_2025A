@@ -1,3 +1,5 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -85,6 +87,10 @@ public class SteeringBehaviors : MonoBehaviour
     // si queda tiempo vemos cómo quedaría con esta forma de implementarlo.
     // protected PlayerControllerRef = null; 
 
+    public List<GameObject> obstacleList = new List<GameObject>();
+
+    public float RepelRadius = 3;
+    public float MaxRepelForce = 3;
 
 
     public void SetEnemyReference(GameObject enemyRef)
@@ -170,6 +176,35 @@ public class SteeringBehaviors : MonoBehaviour
         return -Seek(predictedPosition);
     }
 
+    Vector3 ObstacleAvoidance(Vector3 obstaclePosition, float RepelRadius, float MaxRepelForce)
+    {
+        Vector3 outVector = Vector3.zero;
+
+        // Devuelve una fuerza proporcional a la posición de nuestro personaje con la de nuestro obstáculo.
+        // La fuerza va a ir desde el obstáculo hacia nuestro personaje.
+        Vector3 PuntaMenosCola = transform.position - obstaclePosition;
+        // Qyueremos la dirección de esa flecha.
+        Vector3 DireccionPuntaMenosCola = PuntaMenosCola.normalized;
+        // Usamos la distancia entre nuestro personaje y el obstáculo para ver con qué tanta fuerza lo va a repeler.
+        float distance = PuntaMenosCola.magnitude;
+        // Entre más grande sea la distancia con respecto al radio de repelencia, menos fuerza nos va a aplicar.
+        // si nuestra distancia fuera 0, nos aplica fuerza máxima.
+
+        if(distance - RepelRadius >= 0)
+        {
+            // entonces no me aplica nada de fuerza.
+        }
+        // de lo contrario, estamos dentro del radio de repelencia.
+        // el valor de la resta nos dice qué tan dentro del círculo estamos.
+        float intersectionDistance = RepelRadius - distance;
+        // si es muy negativo quiere decir que estamos muy dentro,
+        float intersectionPercentage = intersectionDistance / RepelRadius; // esto lo deja en el rango de 0 a 1.
+
+        outVector = DireccionPuntaMenosCola * intersectionPercentage * MaxRepelForce;
+
+        return outVector;
+    }
+
     private void FixedUpdate()
     {
         Vector3 steeringForce = Vector3.zero;
@@ -213,6 +248,12 @@ public class SteeringBehaviors : MonoBehaviour
             {
                 rb.linearVelocity = Vector3.zero;
             }
+
+            foreach(var obstacle in obstacleList)
+            {
+                steeringForce += ObstacleAvoidance(obstacle.transform.position, RepelRadius, MaxRepelForce);
+            }
+
 
             // Debería estar aquí pero ahorita no hace nada, según yo.
             steeringForce = Vector3.ClampMagnitude(steeringForce, maxForce);

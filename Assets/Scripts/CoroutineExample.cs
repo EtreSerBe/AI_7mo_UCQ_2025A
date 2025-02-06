@@ -29,6 +29,35 @@ public class CoroutineExample : MonoBehaviour
         }
     }
 
+    private IEnumerator Example()
+    {
+        yield return new WaitForSeconds(1);
+
+        float timeCounter = 0;
+        // se 
+        while (timeCounter < 3.0f)
+        {
+            transform.position += Vector3.one* Time.deltaTime;
+
+            timeCounter += Time.deltaTime;
+
+            yield return null;
+        }
+
+        Debug.Log("Gruñido del jefe");
+        // Activar animación.
+
+        int counter = 0;
+        while (counter > 10)
+        {
+            yield return new WaitForSeconds(interval);
+
+            Debug.Log("holi desde la corrutina");
+            counter++;
+        }
+    }
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

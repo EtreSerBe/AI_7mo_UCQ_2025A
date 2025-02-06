@@ -34,6 +34,7 @@ public class BaseEnemy : MonoBehaviour
         {
             // entonces podemos setearlo en el script de steering behaviors.
             steeringBehaviors.SetEnemyReference(detectionSenses.GetDetectedEnemyRef());
+            steeringBehaviors.obstacleList = detectionSenses.GetDetectedObstacles();
         }
     }
 
