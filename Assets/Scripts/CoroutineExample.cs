@@ -58,6 +58,20 @@ public class CoroutineExample : MonoBehaviour
     }
 
 
+    public IEnumerator AnimalitoAgeOfEmpires()
+    {
+        // repetir
+        while (true)
+        {
+            // caminar poquito en una dirección aleatoria
+            Debug.Log("estoy caminando poquito");
+
+            // esperar x segundos
+            yield return new WaitForSeconds(2);
+        }
+    }
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
