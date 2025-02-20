@@ -150,6 +150,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 5
   height: 5
+  beginNodePos:
+    x: 1
+    y: 2
+  goalNodePos:
+    x: 3
+    y: 4
 --- !u!4 &421938463
 Transform:
   m_ObjectHideFlags: 0

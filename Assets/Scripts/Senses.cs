@@ -58,6 +58,10 @@ public class Senses : MonoBehaviour
         {
             visionColliderSphere.radius = DetectionRadius;
         }
+        else // nos faltaba hacerle saber al usuario que le falta asignar esto o hubo un error en esto y debería hacer algo al respecto
+        {
+            Debug.LogError("visionColliderSphere es null, ¿olvidaste asignar el SphereCollider a este gameobject?");
+        }
     }
 
     private void OnTriggerEnter(Collider other)
