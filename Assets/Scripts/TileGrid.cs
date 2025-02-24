@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -108,7 +109,9 @@ public class TileGrid : MonoBehaviour
         // si no, su padre es null y entonces hace un paso equivocado en el pathfinding.
         beginNode.parentRef = beginNode;
 
-        bool DFSResult = DepthFirstSearchRecursive(beginNode, goalNode);
+        // bool DFSResult = DepthFirstSearchRecursive(beginNode, goalNode);
+        bool DFSResult = DepthFirstSearch(beginNode, goalNode);
+
         if (DFSResult)
         {
             Debug.Log("sí hubo camino");
@@ -153,11 +156,13 @@ public class TileGrid : MonoBehaviour
         Debug.Log("node grid inicializado");
     }
 
-    bool EnqueueNode(Node enqueuedNode, Node currentNode, Node goalNode)
+    bool EnqueueNodeRecursive(Node enqueuedNode, Node currentNode, Node goalNode)
     {
         // cada que intentes poner un nodo como abierto/conocido, hay que checar que su padre sea null.
         if (enqueuedNode.parentRef == null && enqueuedNode.isWalkable == true)
         {
+            Debug.Log($" El nodo X{enqueuedNode.x} Y{enqueuedNode.y} ya está siendo abierto/conocido.");
+
             // le asignamos que el currentNode es su padre.
             enqueuedNode.parentRef = currentNode;
 
@@ -174,6 +179,28 @@ public class TileGrid : MonoBehaviour
         // si no se pudo encolar ni encontró el camino, retorna falso.
         return false;
     }
+
+    // Esta función NO es recursiva.
+    bool EnqueueNode(Node enqueuedNode, Node currentNode, Node goalNode, ref Stack<Node> openNodes)
+    {
+        // cada que intentes poner un nodo como abierto/conocido, hay que checar que su padre sea null.
+        if (enqueuedNode.parentRef == null && enqueuedNode.isWalkable == true)
+        {
+            Debug.Log($" El nodo X{enqueuedNode.x} Y{enqueuedNode.y} ya está siendo abierto/conocido.");
+
+            // le asignamos que el currentNode es su padre.
+            enqueuedNode.parentRef = currentNode;
+
+            // entonces sí podemos checar a este vecino.
+            // en vez de la recursión, tenemos la pila/stack.
+            openNodes.Push(enqueuedNode);
+            return true;
+        }
+
+        // si no se pudo encolar ni encontró el camino, retorna falso.
+        return false;
+    }
+
 
     // NOTA GRAN NOTA: Según yo se necesita que chequemos y asignar el parent antes de mandar DFS otra vez, porque 
     // si no se cicla infinitamente.
@@ -196,7 +223,7 @@ public class TileGrid : MonoBehaviour
         // nos basta con que sea mayor que 0, porque si le restas 1 a 1 o más, entonces va a ser 0 o más.
         if (y < height - 1)
         {
-            bool dfsResult = EnqueueNode(nodeGrid[y + 1][x], currentNode, goalNode);
+            bool dfsResult = EnqueueNodeRecursive(nodeGrid[y + 1][x], currentNode, goalNode);
             if (dfsResult)
                 if (dfsResult)
                 {
@@ -213,7 +240,7 @@ public class TileGrid : MonoBehaviour
         // VECINO DERECHA
         if (x < width - 1)
         {
-            bool dfsResult = EnqueueNode(nodeGrid[y][x + 1], currentNode, goalNode);
+            bool dfsResult = EnqueueNodeRecursive(nodeGrid[y][x + 1], currentNode, goalNode);
             if (dfsResult)
                 if (dfsResult)
                 {
@@ -226,7 +253,7 @@ public class TileGrid : MonoBehaviour
         // VECINO DE ABAJO (y+1)
         if (y > 0)
         {
-            bool dfsResult = EnqueueNode(nodeGrid[y - 1][x], currentNode, goalNode);
+            bool dfsResult = EnqueueNodeRecursive(nodeGrid[y - 1][x], currentNode, goalNode);
             if (dfsResult)
             {
                 nodeGrid[y - 1][x].partOfRoute = true;
@@ -238,7 +265,7 @@ public class TileGrid : MonoBehaviour
         // VECINO IZQUIERDA
         if (x > 0)
         {
-            bool dfsResult = EnqueueNode(nodeGrid[y][x - 1], currentNode, goalNode);
+            bool dfsResult = EnqueueNodeRecursive(nodeGrid[y][x - 1], currentNode, goalNode);
             if (dfsResult)
                 if (dfsResult)
                 {
@@ -248,9 +275,107 @@ public class TileGrid : MonoBehaviour
                 }
         }
 
+        Debug.Log($" El nodo X{x} Y{y} ya está cerrado.");
+
         // en este camino (ninguno de sus hijos) no se encontró el goal, así que vamos hacia atrás/arriba.
         return false;
 
+    }
+
+    bool DepthFirstSearch(Node origin, Node goal)
+    {
+        origin.parentRef = origin;
+
+        // La primera condición de terminación de nuestro ciclo es:
+        // si ya llegué a la meta, termino y retorno verdadero de que sí llegué a la meta.
+
+        // la otra condición de terminación del ciclo es:
+        // si ya no hay acciones por realizar, es decir: si ya no hay más nodos abiertos que visitar.
+        // vamos a guardar nuestros nodos abiertos en una Stack (Pila).
+        Stack<Node> openNodes = new Stack<Node>();
+        // los nodos que ya no les que
+        // Es decir, cuando sacas un nodo de la openStack lo pasas a los nodos cerrados.
+        HashSet<Node> closedNodes = new HashSet<Node>();
+
+        // Necesitamos meter al primer nodo a nuestro conjunto de nodos abiertos antes de inicial el while.
+        openNodes.Push(origin);
+
+        Node currentNode = null;
+
+        while(currentNode != goal && openNodes.Count > 0)
+        {
+            // current va a ser el nodo que esté hasta arriba de la pila en este momento.
+            currentNode = openNodes.Peek();
+
+            // exploramos todos los vecinos y aplicamos DFS sobre cada uno de ellos.
+            int x = currentNode.x;
+            int y = currentNode.y;
+            // checamos los 4 vecinos.
+            // VECINO DE ARRIBA (y-1)
+            // primero tenemos que checar que y-1 sea una posición válida en el array. 
+            // nos basta con que sea mayor que 0, porque si le restas 1 a 1 o más, entonces va a ser 0 o más.
+            if (y < height - 1)
+            {
+                bool dfsResult = EnqueueNode(nodeGrid[y + 1][x], currentNode, goal, ref openNodes);
+                if (dfsResult)
+                {
+                    continue; // si sí se metió un nodo al tope de la pila, hay que iniciar otra vez el while.
+                }
+            }
+
+            // si nuestro arreglo fuera Array[height=5] entonces va del 0 al 4,
+            // si le vamos a sumar 1 y queremos no salirnos del array, debemos checar que el current
+            // sea de -2 que el límite de nuestro arreglo.
+
+            // VECINO DERECHA
+            if (x < width - 1)
+            {
+                bool dfsResult = EnqueueNode(nodeGrid[y][x + 1], currentNode, goal, ref openNodes);
+                if (dfsResult)
+                {
+                    continue; // si sí se metió un nodo al tope de la pila, hay que iniciar otra vez el while.
+                }
+            }
+
+            // VECINO DE ABAJO (y+1)
+            if (y > 0)
+            {
+                bool dfsResult = EnqueueNode(nodeGrid[y - 1][x], currentNode, goal, ref openNodes);
+                if (dfsResult)
+                {
+                    continue; // si sí se metió un nodo al tope de la pila, hay que iniciar otra vez el while.
+                }
+            }
+
+            // VECINO IZQUIERDA
+            if (x > 0)
+            {
+                bool dfsResult = EnqueueNode(nodeGrid[y][x - 1], currentNode, goal, ref openNodes);
+                if (dfsResult)
+                {
+                    continue; // si sí se metió un nodo al tope de la pila, hay que iniciar otra vez el while.
+                }
+            }
+
+            Debug.Log($" El nodo X{x} Y{y} ya está cerrado.");
+
+            // Cuando ya llegamos aquí es que el currentNode ya no tiene más acciones disponibles
+            // entonces pasa a estar cerrado
+            Node closedNode = openNodes.Pop();
+            closedNodes.Add( closedNode );  // este nodo cerrado ya nunca se tiene que modificar.
+        }
+
+        if(currentNode == goal)
+        {
+            Debug.Log("Sí hubo camino de manera iterativa");
+            return true;
+        }
+        else
+        {
+            Debug.Log("NO hubo camino de manera iterativa");
+        }
+
+        return false;
     }
 
     // Update is called once per frame
