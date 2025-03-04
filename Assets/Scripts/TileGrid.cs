@@ -1,6 +1,10 @@
 using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using Unity.Hierarchy;
 using Unity.Mathematics;
 using UnityEngine;
+using Color = UnityEngine.Color;
 
 public class Node
 {
@@ -23,6 +27,7 @@ public class Node
     public int y;
     public bool isWalkable;
     public bool partOfRoute = false;
+    public float priority = 0;
 
     // la referencia al nodo padre en el árbol generado durante el proceso de pathfinding.
     public Node parentRef;
@@ -110,9 +115,12 @@ public class TileGrid : MonoBehaviour
         beginNode.parentRef = beginNode;
 
         // bool DFSResult = DepthFirstSearchRecursive(beginNode, goalNode);
-        bool DFSResult = DepthFirstSearch(beginNode, goalNode);
+        // bool DFSResult = DepthFirstSearch(beginNode, goalNode);
 
-        if (DFSResult)
+        bool BestFirstSearchResult = BestFirstSearch(beginNode, goalNode);
+
+
+        if (BestFirstSearchResult)
         {
             Debug.Log("sí hubo camino");
 
@@ -121,7 +129,9 @@ public class TileGrid : MonoBehaviour
             while (backtrackingNode.parentRef != backtrackingNode)
             {
                 Debug.Log($"el nodo X{backtrackingNode.x}, Y{backtrackingNode.y} fue parte del verdadero camino.");
+                backtrackingNode.partOfRoute = true;
                 backtrackingNode = backtrackingNode.parentRef;
+                
             }
         }
         else
@@ -146,7 +156,7 @@ public class TileGrid : MonoBehaviour
                 nodeGrid[y][x] = new Node(x, y);
                 // Ponemos randoms de caminable o no.
                 float rand = UnityEngine.Random.Range(0, 1.0f);
-                if(rand < 0.3f)
+                if(rand < 0.1f)
                 {
                     nodeGrid[y][x].isWalkable = false;
                 }
@@ -201,6 +211,44 @@ public class TileGrid : MonoBehaviour
         return false;
     }
 
+    bool EnqueueNode(Node enqueuedNode, Node currentNode, Node goalNode, ref Queue<Node> openNodes)
+    {
+        // cada que intentes poner un nodo como abierto/conocido, hay que checar que su padre sea null.
+        if (enqueuedNode.parentRef == null && enqueuedNode.isWalkable == true)
+        {
+            Debug.Log($" El nodo X{enqueuedNode.x} Y{enqueuedNode.y} ya está siendo abierto/conocido.");
+
+            // le asignamos que el currentNode es su padre.
+            enqueuedNode.parentRef = currentNode;
+
+            // entonces sí podemos checar a este vecino.
+            // en vez de la recursión, tenemos la pila/stack.
+            openNodes.Enqueue(enqueuedNode);
+            return true;
+        }
+
+        // si no se pudo encolar ni encontró el camino, retorna falso.
+        return false;
+    }
+
+    void EnqueueNode(Node enqueuedNode, Node currentNode, Node goalNode, ref PriorityQueue openNodes)
+    {
+        // cada que intentes poner un nodo como abierto/conocido, hay que checar que su padre sea null.
+        if (enqueuedNode.parentRef == null && enqueuedNode.isWalkable == true)
+        {
+            // le asignamos que el currentNode es su padre.
+            enqueuedNode.parentRef = currentNode;
+
+            // Al encolar un nodo de prioridad hay que calcular esa prioridad
+            // usamos la distancia euclidiana como la prioridad de los nodos. Usamos teorema de Pitágoras
+            float priority = math.sqrt( math.square(goalNode.x - enqueuedNode.x) + math.square(goalNode.y - enqueuedNode.y) );
+            enqueuedNode.priority = priority;
+
+            // entonces sí podemos checar a este vecino.
+            // en vez de la recursión, tenemos la pila/stack.
+            openNodes.Enqueue(enqueuedNode, enqueuedNode.priority);
+        }
+    }
 
     // NOTA GRAN NOTA: Según yo se necesita que chequemos y asignar el parent antes de mandar DFS otra vez, porque 
     // si no se cicla infinitamente.
@@ -295,6 +343,7 @@ public class TileGrid : MonoBehaviour
         Stack<Node> openNodes = new Stack<Node>();
         // los nodos que ya no les que
         // Es decir, cuando sacas un nodo de la openStack lo pasas a los nodos cerrados.
+        // los nodos cerrados únicamente sirven para saber que ya están cerrados.
         HashSet<Node> closedNodes = new HashSet<Node>();
 
         // Necesitamos meter al primer nodo a nuestro conjunto de nodos abiertos antes de inicial el while.
@@ -378,6 +427,155 @@ public class TileGrid : MonoBehaviour
         return false;
     }
 
+
+    bool BestFirstSearch(Node origin, Node goal)
+    {
+        origin.parentRef = origin;
+
+        // Nuestros nodos abiertos los vamos a guardar en estructura de datos llamada Fila de Prioridad
+        // PriorityQueue.
+        PriorityQueue openNodes = new PriorityQueue();
+        HashSet<Node> closedNodes = new HashSet<Node>();
+        // Necesitamos meter al primer nodo a nuestro conjunto de nodos abiertos antes de inicial el while.
+        openNodes.Enqueue(origin, 0.0f);
+
+        Node currentNode = null;
+        while (openNodes.Count() > 0)
+        {
+            // atendemos al de hasta adelante de la fila de prioridad.
+            currentNode = openNodes.Dequeue();
+            // como ya lo estamos atendiendo, lo pasamos a la lista de nodos cerrados.
+            closedNodes.Add(currentNode);
+
+            // si ya encontramos la meta, nos salimos del ciclo y de esta función.
+            if(currentNode == goal)
+            {
+                Debug.Log("Sí hubo camino de manera iterativa");
+                return true;
+            }
+
+            // Después checamos a sus 4 vecinos.
+            int x = currentNode.x;
+            int y = currentNode.y;
+
+
+
+            // ARRIBA
+            if (y < height - 1)
+            {
+                EnqueueNode(nodeGrid[y + 1][x], currentNode, goal, ref openNodes);
+            }
+
+            // DERECHA
+            if (x < width - 1)
+            {
+                EnqueueNode(nodeGrid[y][x + 1], currentNode, goal, ref openNodes);
+            }
+
+            // ABAJO
+            if ( y > 0)
+            {
+                EnqueueNode(nodeGrid[y - 1][x], currentNode, goal, ref openNodes);
+            }
+
+            // izquierda
+            if (x < 0)
+            {
+                EnqueueNode(nodeGrid[y][x - 1], currentNode, goal, ref openNodes);
+            }
+
+            // Imprimimos cuál cerramos, y después cómo quedó la lista abierta tras tratar de encolar a sus vecinos.
+            Debug.Log($" El nodo X{x} Y{y} ya está cerrado. La lista abierta quedó como muestra abajo: ");
+            openNodes.PrintElements();
+        }
+
+        // con el ciclo de esta manera, si llegas a esta parte de la función es porque se te 
+        // acabaron los nodos abiertos y no llegaste a la meta, por lo que no encontraste un camino.
+        Debug.Log("NO hubo camino.");
+
+        return false;
+    }
+
+    bool BreadthFirstSearch(Node origin, Node goal)
+    {
+        origin.parentRef = origin;
+
+        // La primera condición de terminación de nuestro ciclo es:
+        // si ya llegué a la meta, termino y retorno verdadero de que sí llegué a la meta.
+
+        // la otra condición de terminación del ciclo es:
+        // si ya no hay acciones por realizar, es decir: si ya no hay más nodos abiertos que visitar.
+        // vamos a guardar nuestros nodos abiertos en una Stack (Pila).
+        Queue<Node> openNodes = new Queue<Node>();
+        // los nodos que ya no les que
+        // Es decir, cuando sacas un nodo de la openStack lo pasas a los nodos cerrados.
+        // los nodos cerrados únicamente sirven para saber que ya están cerrados.
+        HashSet<Node> closedNodes = new HashSet<Node>();
+
+        // Necesitamos meter al primer nodo a nuestro conjunto de nodos abiertos antes de inicial el while.
+        openNodes.Enqueue(origin);
+
+        Node currentNode = null;
+
+        while (currentNode != goal && openNodes.Count > 0)
+        {
+            // current va a ser el nodo que esté hasta arriba de la pila en este momento.
+            currentNode = openNodes.Dequeue();
+
+            // Cuando ya llegamos aquí es que el currentNode ya no tiene más acciones disponibles
+            // entonces pasa a estar cerrado
+            closedNodes.Add(currentNode);  // este nodo cerrado ya nunca se tiene que modificar.
+
+            // exploramos todos los vecinos y aplicamos DFS sobre cada uno de ellos.
+            int x = currentNode.x;
+            int y = currentNode.y;
+            // checamos los 4 vecinos.
+            // VECINO DE ARRIBA (y-1)
+            // primero tenemos que checar que y-1 sea una posición válida en el array. 
+            // nos basta con que sea mayor que 0, porque si le restas 1 a 1 o más, entonces va a ser 0 o más.
+            if (y < height - 1)
+            {
+                EnqueueNode(nodeGrid[y + 1][x], currentNode, goal, ref openNodes);
+            }
+
+            // si nuestro arreglo fuera Array[height=5] entonces va del 0 al 4,
+            // si le vamos a sumar 1 y queremos no salirnos del array, debemos checar que el current
+            // sea de -2 que el límite de nuestro arreglo.
+
+            // VECINO DERECHA
+            if (x < width - 1)
+            {
+                EnqueueNode(nodeGrid[y][x + 1], currentNode, goal, ref openNodes);
+            }
+
+            // VECINO DE ABAJO (y+1)
+            if (y > 0)
+            {
+                EnqueueNode(nodeGrid[y - 1][x], currentNode, goal, ref openNodes);
+            }
+
+            // VECINO IZQUIERDA
+            if (x > 0)
+            {
+                EnqueueNode(nodeGrid[y][x - 1], currentNode, goal, ref openNodes);
+            }
+
+            Debug.Log($" El nodo X{x} Y{y} ya está cerrado.");
+        }
+
+        if (currentNode == goal)
+        {
+            Debug.Log("Sí hubo camino de manera iterativa");
+            return true;
+        }
+        else
+        {
+            Debug.Log("NO hubo camino de manera iterativa");
+        }
+
+        return false;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -396,6 +594,8 @@ public class TileGrid : MonoBehaviour
             {
                 if (nodeGrid[y][x].isWalkable)
                 {
+                    Gizmos.color = Color.white;
+
                     if (nodeGrid[y][x].partOfRoute == true)
                     {
                         Gizmos.DrawSphere(new Vector3(x, y, 0.0f), 0.5f);
@@ -412,6 +612,7 @@ public class TileGrid : MonoBehaviour
                 }
                 else
                 {
+                    Gizmos.color = Color.black;
                     // si no es caminable lo dibujamos como una esfera.
                     Gizmos.DrawWireSphere(new Vector3(x, y, 0.0f), 0.5f);
                 }
