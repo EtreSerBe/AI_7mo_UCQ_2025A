@@ -84,9 +84,18 @@ public class TileGrid : MonoBehaviour
     [SerializeField]
     protected int2 beginNodePos = new int2(0, 0);
 
+    public void SetBeginPos(int x, int y)
+    {
+        beginNodePos = new int2(x, y);
+    }
+
     [SerializeField]
     protected int2 goalNodePos = new int2(1, 1);
 
+    public void SetGoalPos(int x, int y)
+    {
+        goalNodePos = new int2(x, y);
+    }
 
     // es mejor que el primer [] sean las Y, y el segundo [] sean las X.
     // esto es mejor para el performance porque permite acceso secuencial a la memoria.
@@ -107,19 +116,8 @@ public class TileGrid : MonoBehaviour
             Debug.LogError("posición de goalNodePos es inválido porque no está dentro de los límites del nodeGrid");
             return; // nos salimos de la función porque si no ejecutaría lo de más abajo y tronaría.
         }
-
-        InitializeGrid();
-
-        Debug.Log("antes de llamar a DFS recursivo");
-
-        Node beginNode = nodeGrid[beginNodePos.y][beginNodePos.x];
-        beginNode.isWalkable = true;
-        Node goalNode = nodeGrid[goalNodePos.y][goalNodePos.x];
-        goalNode.isWalkable = true;
-
-        // IMPORTANTE: le ponemos al parent de nodeGrid que es igual a él mismo, porque
-        // si no, su padre es null y entonces hace un paso equivocado en el pathfinding.
-        beginNode.parentRef = beginNode;
+        /*
+        SetupGrid(beginNodePos, goalNodePos, out Node beginNode, out Node goalNode);
 
         // bool DFSResult = DepthFirstSearchRecursive(beginNode, goalNode);
         // bool DFSResult = DepthFirstSearch(beginNode, goalNode);
@@ -147,11 +145,11 @@ public class TileGrid : MonoBehaviour
         {
             Debug.Log("NO hubo camino");
         }
-
+        */
 
     }
 
-    void InitializeGrid()
+    public void InitializeGrid()
     {
         // hay que pedir memoria para nuestro nodeGrid.
         nodeGrid = new Node[height][];
@@ -165,7 +163,7 @@ public class TileGrid : MonoBehaviour
                 nodeGrid[y][x] = new Node(x, y);
                 // Ponemos randoms de caminable o no.
                 float rand = UnityEngine.Random.Range(0, 1.0f);
-                if(rand < 0.1f)
+                if(rand < 0.4f)
                 {
                     nodeGrid[y][x].isWalkable = false;
                 }
@@ -173,6 +171,62 @@ public class TileGrid : MonoBehaviour
         }
 
         Debug.Log("node grid inicializado");
+    }
+
+    public void SetupGrid(int2 beginNodePosition, int2 goalNodePosition, out Node beginNode, out Node goalNode)
+    {
+        beginNode = nodeGrid[beginNodePosition.y][beginNodePosition.x];
+        beginNode.isWalkable = true;
+        goalNode = nodeGrid[goalNodePosition.y][goalNodePosition.x];
+        goalNode.isWalkable = true;
+
+        // IMPORTANTE: le ponemos al parent de nodeGrid que es igual a él mismo, porque
+        // si no, su padre es null y entonces hace un paso equivocado en el pathfinding.
+        beginNode.parentRef = beginNode;
+    }
+
+    public Node NearestNode(float x, float y)
+    {
+        Node resultNode = new Node();
+        float shortestDistance = float.MaxValue;
+
+
+        // iteramos por todos los nodos de nuestro tilegrid y encontramos el más cercano a esa X y Y.
+        for(int j = 0; j < height; j++)
+        {
+            for (int i = 0; i < width; i++)
+            {
+                // aplicamos teorema de Pitágoras para obtener las distancias a cada Nodo.
+                float distanceToNode = math.sqrt(math.square(nodeGrid[j][i].x - x) +
+                    math.square(nodeGrid[j][i].y - y));
+                // checamos si esta nueva distancia es menor que la que teníamos como mínima hasta ahorita
+                if(distanceToNode < shortestDistance)
+                {
+                    // y si sí fue más chica, entonces esta es la nueva mínima.
+                    shortestDistance = distanceToNode;
+                    resultNode = nodeGrid[j][i];
+                }
+            }
+        }
+
+        return resultNode;
+
+    }
+
+    public List<Node> RouteToGoal(Node goalNode)
+    {
+        List<Node> result = new List<Node>();
+        Node backtrackingNode = goalNode;
+        // haciendo backtracking:
+        while (backtrackingNode.parentRef != backtrackingNode)
+        {
+            Debug.Log($"el nodo X{backtrackingNode.x}, Y{backtrackingNode.y} fue parte del verdadero camino.");
+            backtrackingNode.partOfRoute = true;
+            backtrackingNode = backtrackingNode.parentRef;
+            result.Add(backtrackingNode); // lo metemos al result.
+        }
+        result.Reverse(); // para que nos lo dé de inicio a fin en vez de fin a inicio.
+        return result;
     }
 
     bool EnqueueNodeRecursive(Node enqueuedNode, Node currentNode, Node goalNode)
@@ -649,7 +703,7 @@ public class TileGrid : MonoBehaviour
         return false;
     }
 
-    bool AStarSearch(Node origin, Node goal)
+    public bool AStarSearch(Node origin, Node goal)
     {
         origin.parentRef = origin;
 
@@ -704,8 +758,8 @@ public class TileGrid : MonoBehaviour
             }
 
             // Imprimimos cuál cerramos, y después cómo quedó la lista abierta tras tratar de encolar a sus vecinos.
-            Debug.Log($" El nodo X{x} Y{y} ya está cerrado. La lista abierta quedó como muestra abajo: ");
-            openNodes.PrintElements();
+            // Debug.Log($" El nodo X{x} Y{y} ya está cerrado. La lista abierta quedó como muestra abajo: ");
+            // openNodes.PrintElements();
         }
 
         // con el ciclo de esta manera, si llegas a esta parte de la función es porque se te 
