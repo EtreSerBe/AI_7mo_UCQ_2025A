@@ -36,6 +36,11 @@ public class PriorityQueue
         nodes.AddLast(node);
     }
 
+    public bool Remove(Node node)
+    {
+        return nodes.Remove(node);
+    }
+
     public Node Dequeue()
     {
         Node outNode = nodes.First.Value;

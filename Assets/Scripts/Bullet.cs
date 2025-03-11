@@ -1,5 +1,34 @@
 using UnityEngine;
 
+/*
+ 
+ bullet1
+    damage=5, mask=X, 18 variables más
+
+bullet2 
+    damage=5, mask=X, 18 variables más
+
+bullet3
+    damage=5, mask=X
+ 
+*/
+
+/*
+
+bulletScriptableObject 
+    damage=5, mask=X, 18 variables más
+
+ 
+bullet1
+    ScriptableObjectRef = bulletScriptableObject;
+    ScriptableObjectRef.damage
+    ScriptableObjectRef.mask
+
+bullet2
+    ScriptableObjectRef = bulletScriptableObject:
+ */
+
+
 public class Bullet : MonoBehaviour
 {
     [SerializeField]

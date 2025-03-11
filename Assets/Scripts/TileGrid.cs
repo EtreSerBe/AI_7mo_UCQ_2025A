@@ -19,6 +19,9 @@ public class Node
         this.y = y;
         isWalkable = true;
         parentRef = null;
+        terrain_cost = 1;
+        accumulated_cost = 0; // empieza en 0 porque al fin y al cabo siempre se lo asigna su primer padre.
+        final_cost = float.PositiveInfinity;
     }
 
     // Qué necesitan tener nuestros nodos.
@@ -28,6 +31,10 @@ public class Node
     public bool isWalkable;
     public bool partOfRoute = false;
     public float priority = 0;
+    public float terrain_cost; // terrain cost
+    public float accumulated_cost; // costo acumulado del padre.
+    public float heuristic_cost; // costo asociado a la heurística
+    public float final_cost; // g_cost + f_cost, es decir, accumulated_cost + heuristic_cost.
 
     // la referencia al nodo padre en el árbol generado durante el proceso de pathfinding.
     public Node parentRef;
@@ -117,10 +124,12 @@ public class TileGrid : MonoBehaviour
         // bool DFSResult = DepthFirstSearchRecursive(beginNode, goalNode);
         // bool DFSResult = DepthFirstSearch(beginNode, goalNode);
 
-        bool BestFirstSearchResult = BestFirstSearch(beginNode, goalNode);
+        // bool BestFirstSearchResult = BestFirstSearch(beginNode, goalNode);
+        bool SearchResult = DjikstraSearch(beginNode, goalNode);
+        //bool AStarSearchResult = AStarSearch(beginNode, goalNode);
 
 
-        if (BestFirstSearchResult)
+        if (SearchResult)
         {
             Debug.Log("sí hubo camino");
 
@@ -247,6 +256,84 @@ public class TileGrid : MonoBehaviour
             // entonces sí podemos checar a este vecino.
             // en vez de la recursión, tenemos la pila/stack.
             openNodes.Enqueue(enqueuedNode, enqueuedNode.priority);
+        }
+    }
+
+    void DijkstraEnqueueNode(Node enqueuedNode, Node currentNode, Node goalNode, ref PriorityQueue openNodes)
+    {
+        // cada que intentes poner un nodo como abierto/conocido, hay que checar que su padre sea null.
+        if (enqueuedNode.isWalkable == true)
+        {
+            // primero tenemos que checar si ya tiene padre o no.
+            // si no tiene, pues este currentNode ahora es su nuevo padre.
+            if(enqueuedNode.parentRef == null)
+            {
+                enqueuedNode.parentRef = currentNode;
+                // el peso de mis antepasados + el peso propio de pasar por este nodo EnqueuedNode
+                enqueuedNode.accumulated_cost = currentNode.accumulated_cost + enqueuedNode.terrain_cost;
+                enqueuedNode.priority = enqueuedNode.accumulated_cost;
+                // finalmente, lo metemos en la fila de prioridad.
+                openNodes.Enqueue(enqueuedNode, enqueuedNode.priority);
+            }
+            // si sí tiene padre, entonces checamos para ver si currentNode sería un padre más barato que el que ya tiene.
+            else if(enqueuedNode.parentRef.accumulated_cost >  currentNode.accumulated_cost) 
+            {
+                // entonces lo tenemos que eliminar de la lista abierta (openNodes) en la posición que tiene ahorita,
+                // y lo metemos en la nueva posición que le corresponda.
+                openNodes.Remove(enqueuedNode);
+
+                // entonces currentNode sería un padre más barato.
+                enqueuedNode.parentRef = currentNode;
+                // el peso de mis antepasados + el peso propio de pasar por este nodo EnqueuedNode
+                enqueuedNode.accumulated_cost = currentNode.accumulated_cost + enqueuedNode.terrain_cost;
+                enqueuedNode.priority = enqueuedNode.accumulated_cost;
+
+                // finalmente, lo metemos en la fila de prioridad.
+                openNodes.Enqueue(enqueuedNode, enqueuedNode.priority);
+            }
+        }
+    }
+
+    void AStarEnqueueNode(Node enqueuedNode, Node currentNode, Node goalNode, ref PriorityQueue openNodes)
+    {
+        // cada que intentes poner un nodo como abierto/conocido, hay que checar que su padre sea null.
+        if (enqueuedNode.isWalkable == true)
+        {
+            // primero tenemos que checar si ya tiene padre o no.
+            // si no tiene, pues este currentNode ahora es su nuevo padre.
+            if (enqueuedNode.parentRef == null)
+            {
+                enqueuedNode.parentRef = currentNode;
+                // el peso de mis antepasados + el peso propio de pasar por este nodo EnqueuedNode
+                enqueuedNode.accumulated_cost = currentNode.accumulated_cost + enqueuedNode.terrain_cost;
+                // Sacamos su distancia hacia el nodo objetivo.
+                enqueuedNode.heuristic_cost = math.sqrt(math.square(goalNode.x - enqueuedNode.x) 
+                    + math.square(goalNode.y - enqueuedNode.y));
+
+                enqueuedNode.final_cost = enqueuedNode.priority = enqueuedNode.accumulated_cost + enqueuedNode.heuristic_cost;
+                // finalmente, lo metemos en la fila de prioridad.
+                openNodes.Enqueue(enqueuedNode, enqueuedNode.priority);
+            }
+            // si sí tiene padre, entonces checamos para ver si currentNode sería un padre más barato que el que ya tiene.
+            else if (enqueuedNode.parentRef.accumulated_cost > currentNode.accumulated_cost)
+            {
+                // entonces lo tenemos que eliminar de la lista abierta (openNodes) en la posición que tiene ahorita,
+                // y lo metemos en la nueva posición que le corresponda.
+                openNodes.Remove(enqueuedNode);
+
+                // entonces currentNode sería un padre más barato.
+                enqueuedNode.parentRef = currentNode;
+                // el peso de mis antepasados + el peso propio de pasar por este nodo EnqueuedNode
+                enqueuedNode.accumulated_cost = currentNode.accumulated_cost + enqueuedNode.terrain_cost;
+                // Sacamos su distancia hacia el nodo objetivo.
+                enqueuedNode.heuristic_cost = math.sqrt(math.square(goalNode.x - enqueuedNode.x)
+                    + math.square(goalNode.y - enqueuedNode.y));
+
+                enqueuedNode.final_cost = enqueuedNode.priority = enqueuedNode.accumulated_cost + enqueuedNode.heuristic_cost;
+
+                // finalmente, lo metemos en la fila de prioridad.
+                openNodes.Enqueue(enqueuedNode, enqueuedNode.priority);
+            }
         }
     }
 
@@ -496,6 +583,138 @@ public class TileGrid : MonoBehaviour
         return false;
     }
 
+    bool DjikstraSearch(Node origin, Node goal)
+    {
+        origin.parentRef = origin;
+
+        // Nuestros nodos abiertos los vamos a guardar en estructura de datos llamada Fila de Prioridad
+        // PriorityQueue.
+        PriorityQueue openNodes = new PriorityQueue();
+        HashSet<Node> closedNodes = new HashSet<Node>();
+        // Necesitamos meter al primer nodo a nuestro conjunto de nodos abiertos antes de inicial el while.
+        openNodes.Enqueue(origin, 0.0f);
+
+        Node currentNode = null;
+        while (openNodes.Count() > 0)
+        {
+            // atendemos al de hasta adelante de la fila de prioridad.
+            currentNode = openNodes.Dequeue();
+            // como ya lo estamos atendiendo, lo pasamos a la lista de nodos cerrados.
+            closedNodes.Add(currentNode);
+
+            // si ya encontramos la meta, nos salimos del ciclo y de esta función.
+            if (currentNode == goal)
+            {
+                Debug.Log("Sí hubo camino en Djikstra");
+                return true;
+            }
+
+            // Después checamos a sus 4 vecinos.
+            int x = currentNode.x;
+            int y = currentNode.y;
+
+            // ARRIBA
+            if (y < height - 1)
+            {
+                DijkstraEnqueueNode(nodeGrid[y + 1][x], currentNode, goal, ref openNodes);
+            }
+
+            // DERECHA
+            if (x < width - 1)
+            {
+                DijkstraEnqueueNode(nodeGrid[y][x + 1], currentNode, goal, ref openNodes);
+            }
+
+            // ABAJO
+            if (y > 0)
+            {
+                DijkstraEnqueueNode(nodeGrid[y - 1][x], currentNode, goal, ref openNodes);
+            }
+
+            // izquierda
+            if (x > 0)
+            {
+                DijkstraEnqueueNode(nodeGrid[y][x - 1], currentNode, goal, ref openNodes);
+            }
+
+            // Imprimimos cuál cerramos, y después cómo quedó la lista abierta tras tratar de encolar a sus vecinos.
+            Debug.Log($" El nodo X{x} Y{y} ya está cerrado. La lista abierta quedó como muestra abajo: ");
+            openNodes.PrintElements();
+        }
+
+        // con el ciclo de esta manera, si llegas a esta parte de la función es porque se te 
+        // acabaron los nodos abiertos y no llegaste a la meta, por lo que no encontraste un camino.
+        Debug.Log("NO hubo camino.");
+
+        return false;
+    }
+
+    bool AStarSearch(Node origin, Node goal)
+    {
+        origin.parentRef = origin;
+
+        // Nuestros nodos abiertos los vamos a guardar en estructura de datos llamada Fila de Prioridad
+        // PriorityQueue.
+        PriorityQueue openNodes = new PriorityQueue();
+        HashSet<Node> closedNodes = new HashSet<Node>();
+        // Necesitamos meter al primer nodo a nuestro conjunto de nodos abiertos antes de inicial el while.
+        openNodes.Enqueue(origin, 0.0f);
+
+        Node currentNode = null;
+        while (openNodes.Count() > 0)
+        {
+            // atendemos al de hasta adelante de la fila de prioridad.
+            currentNode = openNodes.Dequeue();
+            // como ya lo estamos atendiendo, lo pasamos a la lista de nodos cerrados.
+            closedNodes.Add(currentNode);
+
+            // si ya encontramos la meta, nos salimos del ciclo y de esta función.
+            if (currentNode == goal)
+            {
+                Debug.Log("Sí hubo camino en Djikstra");
+                return true;
+            }
+
+            // Después checamos a sus 4 vecinos.
+            int x = currentNode.x;
+            int y = currentNode.y;
+
+            // ARRIBA
+            if (y < height - 1)
+            {
+                AStarEnqueueNode(nodeGrid[y + 1][x], currentNode, goal, ref openNodes);
+            }
+
+            // DERECHA
+            if (x < width - 1)
+            {
+                AStarEnqueueNode(nodeGrid[y][x + 1], currentNode, goal, ref openNodes);
+            }
+
+            // ABAJO
+            if (y > 0)
+            {
+                AStarEnqueueNode(nodeGrid[y - 1][x], currentNode, goal, ref openNodes);
+            }
+
+            // izquierda
+            if (x > 0)
+            {
+                AStarEnqueueNode(nodeGrid[y][x - 1], currentNode, goal, ref openNodes);
+            }
+
+            // Imprimimos cuál cerramos, y después cómo quedó la lista abierta tras tratar de encolar a sus vecinos.
+            Debug.Log($" El nodo X{x} Y{y} ya está cerrado. La lista abierta quedó como muestra abajo: ");
+            openNodes.PrintElements();
+        }
+
+        // con el ciclo de esta manera, si llegas a esta parte de la función es porque se te 
+        // acabaron los nodos abiertos y no llegaste a la meta, por lo que no encontraste un camino.
+        Debug.Log("NO hubo camino.");
+
+        return false;
+    }
+
     bool BreadthFirstSearch(Node origin, Node goal)
     {
         origin.parentRef = origin;
@@ -605,6 +824,7 @@ public class TileGrid : MonoBehaviour
                     // ahora dibujemos una línea de padre a hijo.
                     if (nodeGrid[y][x].parentRef != null)
                     {
+                        Gizmos.color = Color.red;
                         Vector3 parentPos = new Vector3(nodeGrid[y][x].parentRef.x, nodeGrid[y][x].parentRef.y, 0);
                         Vector3 currentPos = new Vector3(x, y, 0.0f);
                         Gizmos.DrawLine(parentPos, currentPos);
