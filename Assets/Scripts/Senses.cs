@@ -18,12 +18,12 @@ public class Senses : MonoBehaviour
 
 
     // Manera #1
-    // radio alrededor del dueÒo de este script en el cual se detectar·n gameObjects.
+    // radio alrededor del due√±o de este script en el cual se detectar√°n gameObjects.
     [SerializeField]
     protected float DetectionRadius = 12.5f;
 
     // Manera #2
-    // detectar a travÈs de colliders.
+    // detectar a trav√©s de colliders.
     protected SphereCollider visionColliderSphere;
 
 
@@ -58,29 +58,29 @@ public class Senses : MonoBehaviour
         {
             visionColliderSphere.radius = DetectionRadius;
         }
-        else // nos faltaba hacerle saber al usuario que le falta asignar esto o hubo un error en esto y deberÌa hacer algo al respecto
+        else // nos faltaba hacerle saber al usuario que le falta asignar esto o hubo un error en esto y deber√≠a hacer algo al respecto
         {
-            Debug.LogError("visionColliderSphere es null, øolvidaste asignar el SphereCollider a este gameobject?");
+            Debug.LogError("visionColliderSphere es null, ¬øolvidaste asignar el SphereCollider a este gameobject?");
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"entrÛ a colisiÛn con: {other.gameObject.name}");
+        Debug.Log($"entr√≥ a colisi√≥n con: {other.gameObject.name}");
         // si alguien choca contra nuestro visionColliderSphere,
-        // entonces alguien acaba de entrar a nuestro rango de visiÛn.
+        // entonces alguien acaba de entrar a nuestro rango de visi√≥n.
 
         if(other.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             //Debug.Log(layerMask.ToString());
             //Debug.Log( LayerMask.GetMask(layerMask.ToString()));
-            // si quien chocÛ conmigo es un player, lo aÒado a las entidades que est·n en mi rango de visiÛn.
+            // si quien choc√≥ conmigo es un player, lo a√±ado a las entidades que est√°n en mi rango de visi√≥n.
             refEnemigosDetectados.Add(other.gameObject);
             // Si detectamos de nuevo al player, pues le decimos que cancele el desalertar
             IsAlerted = true;
             StopCoroutine( CorrutinaDesalertar ); 
         }
-        // tenerlo como else hace que le dÈ prioridad al player.
+        // tenerlo como else hace que le d√© prioridad al player.
         else if(other.gameObject.layer == LayerMask.NameToLayer("Waypoints")) 
         {
             refEnemigosDetectados.Add(other.gameObject);
@@ -94,13 +94,13 @@ public class Senses : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        Debug.Log($"SaliÛ de colisiÛn con: {other.gameObject.name}");
+        Debug.Log($"Sali√≥ de colisi√≥n con: {other.gameObject.name}");
 
         // si alguien deja de chocar contra nuestro visionColliderSphere,
         // entonces ya lo vamos a quitar de nuestros enemigos conocidos.
         if (other.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
-            // si quien chocÛ conmigo es un player, lo aÒado a las entidades que est·n en mi rango de visiÛn.
+            // si quien choc√≥ conmigo es un player, lo a√±ado a las entidades que est√°n en mi rango de visi√≥n.
             refEnemigosDetectados.Remove(other.gameObject);
             CorrutinaDesalertar = StartCoroutine(Desalertar());
         }
@@ -122,7 +122,7 @@ public class Senses : MonoBehaviour
         return false;
     }
 
-    // QuÈ es una sobrecarga de funciÛn? (function overload)
+    // Qu√© es una sobrecarga de funci√≥n? (function overload)
     public bool IsInsideRadius(GameObject pos1, GameObject pos2, float radius)
     {
         return IsInsideRadius(pos1.transform.position, pos2.transform.position, radius);
@@ -136,15 +136,15 @@ public class Senses : MonoBehaviour
 
         foreach (GameObject obj in foundObjects)
         {
-            if (obj == this.gameObject) // ignorar al dueÒo de este script, para que no se encuentre a sÌ mismo.
+            if (obj == this.gameObject) // ignorar al due√±o de este script, para que no se encuentre a s√≠ mismo.
                 continue;
 
-            // Si este encontrado est· suficientemente cerca, pues lo meto en la lista
+            // Si este encontrado est√° suficientemente cerca, pues lo meto en la lista
             if(IsInsideRadius(originPosition, obj.transform.position, radius) )
             {
                 nearbyObjects.Add(obj);
             }
-            // si no, pues no hacemos nada con Èl.
+            // si no, pues no hacemos nada con √©l.
         }
 
         return nearbyObjects;
@@ -156,7 +156,7 @@ public class Senses : MonoBehaviour
 
         // refEnemigosDetectados = GetNearbyObjects(transform.position, DetectionRadius);
 
-        // que nos ordene los objetivos encontrados por alg˙n par·metro, por ejemplo, la distancia de menor a mayor.
+        // que nos ordene los objetivos encontrados por alg√∫n par√°metro, por ejemplo, la distancia de menor a mayor.
         // refEnemigosDetectados.Sort()
         float bestDistance = float.MaxValue;
         GameObject nearestGameObj = null;
@@ -165,7 +165,7 @@ public class Senses : MonoBehaviour
             float currentDistance = (transform.position - obj.transform.position).magnitude;
             if (currentDistance < bestDistance)
             {
-                // esta es nuestra nueva mejor distancia, y guardamos a cu·l Objeto se refiere.
+                // esta es nuestra nueva mejor distancia, y guardamos a cu√°l Objeto se refiere.
                 bestDistance = currentDistance;
                 nearestGameObj = obj;
             }
@@ -182,7 +182,7 @@ public class Senses : MonoBehaviour
         detectedEnemy = nearestGameObj;
 
 
-        //// Queremos saber la distancia entre el GameObject dueÒo de este script y el Enemigo.
+        //// Queremos saber la distancia entre el GameObject due√±o de este script y el Enemigo.
         //// if ((gameObject.transform.position - ReferenciaEnemigo.transform.position).magnitude
         ////    <= DetectionRadius)
         //if (IsInsideRadius(gameObject, ReferenciaEnemigo, DetectionRadius))
@@ -190,7 +190,7 @@ public class Senses : MonoBehaviour
         //    isEnemyDetected = true;
         //    detectedEnemy = ReferenciaEnemigo.gameObject;
         //    // Debug.Log("Hora de correr");
-        //    Debug.Log("Enemigo est· dentro del radio de detecciÛn.");
+        //    Debug.Log("Enemigo est√° dentro del radio de detecci√≥n.");
         //}
         //else
         //{
@@ -200,19 +200,19 @@ public class Senses : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        // lo tenemos que dibujar incluso aunque a˙n no hayamos detectado al enemigo, 
+        // lo tenemos que dibujar incluso aunque a√∫n no hayamos detectado al enemigo, 
         // para poder visualizar mejor ese radio.
         Gizmos.color = Color.green;
 
         if (detectedEnemy != null)
-        {        // Queremos saber la distancia entre el GameObject dueÒo de este script y el Enemigo.
+        {        // Queremos saber la distancia entre el GameObject due√±o de este script y el Enemigo.
             if (IsInsideRadius(gameObject, detectedEnemy, DetectionRadius))
             {
                 Gizmos.color = Color.red;
             }
         }
 
-        // haya detectado o no al enemigo debe dibujar la esfera de detecciÛn.
+        // haya detectado o no al enemigo debe dibujar la esfera de detecci√≥n.
         Gizmos.DrawWireSphere(transform.position, DetectionRadius);
 
     }
