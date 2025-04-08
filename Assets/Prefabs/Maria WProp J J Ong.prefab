@@ -1,0 +1,171 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &8464925313830575746
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.5604232
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.6144037
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_Name
+      value: Maria WProp J J Ong
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3786250596407181178, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: ef34726090ec255469defcf9ecc7696d, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_WarningMessage
+      value: "\nBinding warning: Some generic clip(s) animate transforms that are
+        already bound by a Humanoid avatar. These transforms can only be changed
+        by Humanoid clips.\n\tFrom animation clip 'great sword casting'"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8841992708261375833, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5088109100981316855}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3541971720159035719}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1269273217587801620}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7765185379005542406}
+  m_SourcePrefab: {fileID: 100100000, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+--- !u!1 &8770792609654793171 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9f9c32b69c0bd204bae57f2e66d2196c, type: 3}
+  m_PrefabInstance: {fileID: 8464925313830575746}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5088109100981316855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8770792609654793171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e775a94fb083df6409d1ccceb7a9b7d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3541971720159035719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8770792609654793171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb81b6ec1976e734e9e973b182a1782f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHP: 10
+  attackDamage: 3
+  _visionRadius: 15
+  _meleeBasicAttackDamage: 3
+  _meleeBasicAttackRange: 5
+  _meleeBasicAttackRate: 2
+  _meleeAreaAttackDamage: 8
+  _meleeAreaAttackRange: 10
+  _meleeAreaAttackRate: 5
+--- !u!114 &1269273217587801620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8770792609654793171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b672240af3c931a4b95c724ce7af014a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerRef: {fileID: 0}
+  enemyOwner: {fileID: 3541971720159035719}
+--- !u!195 &7765185379005542406
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8770792609654793171}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4

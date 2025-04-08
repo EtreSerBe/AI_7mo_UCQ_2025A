@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 public class MeleeState : BaseState
 {
@@ -14,7 +15,15 @@ public class MeleeState : BaseState
 
     private float _lastBasicAttackTime;
     private float _lastAreaAttackTime;
+    private float _lastDashAttackTime;
+    private float _lastUltimateAttackTime;
 
+
+    private int _meleeBasicAttackAnimatorHash;
+    private int _meleeDashAttackAnimatorHash;
+    private int _meleeAreaAttackAnimatorHash;
+    private int _meleeUltimateAttackAnimatorHash;
+    
     // Cuáles acciones tiene disponibles este estado?
     public enum MeleeActions
     {
@@ -37,6 +46,10 @@ public class MeleeState : BaseState
     void Start()
     {
         StateName = "MeleeState";
+        _meleeBasicAttackAnimatorHash = Animator.StringToHash("BasicAttack");
+        _meleeDashAttackAnimatorHash = Animator.StringToHash("DashAttack");
+        _meleeAreaAttackAnimatorHash = Animator.StringToHash("AreaAttack");
+        _meleeUltimateAttackAnimatorHash = Animator.StringToHash("UltimateAttack");
     }
 
     public override void OnUpdate()
@@ -45,67 +58,86 @@ public class MeleeState : BaseState
         // A nuestro dueño le decimos que se acerque a su Player objetivo.
         _enemyOwner.GetNavMeshAgent().destination = _playerRef.transform.position;
 
+        // EJEMPLOTE:
+        // Si después de todas las acciones de un combo X, el player no sufrió nada de daño
+        // entonces, aplicar ataque especial Y.
+        // if (_pastActions.Contains(MeleeActions.BasicMeleeAttack) &&
+        //     _pastActions.Contains(MeleeActions.DashMeleeAttack) &&
+        //     _pastActions.Contains(MeleeActions.AreaMeleeAttack) &&
+        //     _pastActions.Contains(MeleeActions.MeleeUltimateAttack))
+        // {
+        //     if (_playerRef.hp == playerHpBeforeComboStart)
+        //     {
+        //         // entonces, aplicar ataque especial MegaUltimateWow
+        //         if (tryMegaUltimateWowAttack())
+        //             return;
+        //     }
+        // }
+        
+        
         // Primero tenemos que checar que SÍ haya una acción pasada antes de checar si la acción pasada fue un melee básico.
         if (_pastActions.Count > 0)
         {
+            if (_pastActions.Contains(MeleeActions.AreaMeleeAttack) &&
+                _pastActions.Contains(MeleeActions.DashMeleeAttack))
+            {
+                // entonces ya podemos hacer el ultimate.
+                if (TryUltimateAttack())
+                {
+                    // La clave para que esto funcione bien es que esta transición se haga DESPUÉS de terminar el 
+                    // ultimate.
+                    
+                    // Después de hacer el ultimate, hacemos el cambio de estado al estado Ranged.
+                    EnemyFSM ownerFsm = (EnemyFSM)OwnerFSMRef;
+                    OwnerFSMRef.ChangeState(ownerFsm.GetRangedState());
+                    return;
+                }
+            }
+            
             if (_pastActions[_pastActions.Count - 1] == MeleeActions.BasicMeleeAttack)
             {
-                // Area attack
-                if (_lastAreaAttackTime + _enemyOwner.GetMeleeAreaAttackRate() < Time.time)
+                // Tenemos 2 casos
+                // Caso 1) ya se hizo el dash o area hace 2 acciones
+                if (_pastActions.Count > 1)
                 {
-                    // Hay que checar si ya estamos en rango válido para hacer un ataque melee de área.
-                    // checamos si la distancia entre este agente y el player es menor o igual que el rango de nuestro ataque melee.
-                    if (Vector3.Distance(transform.position, _playerRef.transform.position) <=
-                        _enemyOwner.GetMeleeAreaAttackRange())
+                    // ya con esto, podemos decidir si hacer un dash o uno de área
+                    // (_pastActions.FindLastIndex(is MeleeActions.DashMeleeAttack) <=  _pastActions.Count - 2) ) // esta es más flexible
+                    if (_pastActions[_pastActions.Count - 2] ==  MeleeActions.DashMeleeAttack)
                     {
-                        // si esa condición se cumple, entonces puedo atacar con ese ataque melee a ese player.
-                        Debug.Log(
-                            $"el agente: {gameObject.name} atacó al player {_playerRef.name} con un ataque melee de area.");
+                        // Entonces hacemos el de área
+                        if (TryAreaAttack())
+                            return;
+                    }
+                    else if (_pastActions[_pastActions.Count - 2] == MeleeActions.AreaMeleeAttack)
+                    {
+                        // entonces hacemos el dash   
+                        if (TryDashAttack())
+                            return;
+                    }
+                }
+                // Caso 2) no se ha usado ni el Dash ni el de área, entonces ambos tienen un 50% de probabilidad.
+                else
+                {
+                    // hacemos un random de 50/50 para elegir si se hace un ataque de área o un dash.
+                    int rand = Random.Range(0, 2); // random entre 0 y 1
+                    if (rand == 1)
+                    {
+                        // Si sí se ejecutó esta acción, salir del método OnUpdate para no poder ejecutar ninguna otra acción.
+                        if (TryAreaAttack())
+                            return;
+                    }
 
-                        // Añadimos esta acción al registro de acciones pasadas.
-                        _pastActions.Add(MeleeActions.AreaMeleeAttack);
-
-                        for (int i = 0; i < _pastActions.Count; i++)
-                        {
-                            Debug.Log($"action of time: {i} was: {_pastActions[i]}");
-                        }
-
-                        // Después de lanzar el golpe, activamos el timer de "ya no puedes volver a atacar hasta después de cierto tiempo"
-                        _lastAreaAttackTime = Time.time;
-                        return;
+                    if (rand == 0) // ataque dash
+                    {
+                        if (TryDashAttack())
+                            return;
                     }
                 }
             }
         }
 
-        // Antes de atacar, tenemos que checar si sí podemos atacar por el tiempo de espera entre ataques.
-        // ejemplo: _lastAttackTime = 5 ; _enemyOwner.GetMeleeAttackRate() = 2.0f; Time.time = 6.9
-        // con esos datos del ejemplo, no podríamos atacar, porque nuestro siguiente ataque podría ser a partir del 
-        // tiempo 7.0, y 6.9 es menor que 7, entonces no podemos atacar.
-        if (_lastBasicAttackTime + _enemyOwner.GetMeleeBasicAttackRate() < Time.time)
-        {
-            // Hay que checar si ya estamos en rango válido para hacer un ataque melee.
-            // checamos si la distancia entre este agente y el player es menor o igual que el rango de nuestro ataque melee.
-            if (Vector3.Distance(transform.position, _playerRef.transform.position) <=
-                _enemyOwner.GetMeleeBasicAttackRange())
-            {
-                // si esa condición se cumple, entonces puedo atacar con ese ataque melee a ese player.
-                Debug.Log($"el agente: {gameObject.name} atacó al player {_playerRef.name} con un ataque melee.");
-
-                // Añadimos esta acción al registro de acciones pasadas.
-                _pastActions.Add(MeleeActions.BasicMeleeAttack);
-
-                for (int i = 0; i < _pastActions.Count; i++)
-                {
-                    Debug.Log($"action of time: {i} was: {_pastActions[i]}");
-                }
-
-                // Después de lanzar el golpe, activamos el timer de "ya no puedes volver a atacar hasta después de cierto tiempo"
-                _lastBasicAttackTime = Time.time;
-                return;
-            }
-        }
-
+        if (TryBasicMeleeAttack())
+            return;
 
         // Debug.Log(" " + 1);
         // toma ese '1' y lo convierte en un caracter temporalmente, y así lo puede interpretar de otra manera.
@@ -119,20 +151,76 @@ public class MeleeState : BaseState
             return; // La regla es: tú pones change state? la siguiente línea debe ser return.
         }
 
+    }
 
-        // Action myAction = pastActions.Last;
-        // While(myAction is not DashAttack && is not AreaAttack)
-        // {
-        //      myAction = previousAction;
-        // }
-        // if(myAction is DashAttack)
-        //{
-        //  myNewAction = AreaAttack;
-        //}
-        // else
-        // {
-        //  myNewAction = DashAttack;
-        // }
+    public void BeginMeleeBasicAttackActiveFrames()
+    {
+        Debug.LogWarning("BeginMeleeBasicAttackActiveFrames");
+    }
+    
+    public void EndMeleeBasicAttackActiveFrames()
+    {
+        Debug.LogWarning("EndMeleeBasicAttackActiveFrames");
+    }
+
+    // Tiempo en que se usó este ataque la última vez.
+    // la cadencia/ritmo en que se puede hacer este ataque
+    private bool TryAttack(ref float lastAttackTime, float attackRate, float attackRange, MeleeActions actionType, 
+        int attackTriggerHash)
+    {
+        // checar si el ataque ya se puede volver a realizar.
+        if (lastAttackTime + attackRate < Time.time)
+        {
+            // Hay que checar si ya estamos en rango válido para hacer este ataque.
+            // checamos si la distancia entre este agente y el player es menor o igual que el rango de nuestro ataque.
+            if (Vector3.Distance(transform.position, _playerRef.transform.position) <=
+                attackRange)
+            {
+                // si esa condición se cumple, entonces puedo atacar con ese ataque melee a ese player.
+                Debug.Log(
+                    $"el agente: {gameObject.name} atacó al player {_playerRef.name} con un ataque melee de {actionType}.");
+
+                _enemyOwner.GetAnimator().SetTrigger(attackTriggerHash);
+                
+                // Añadimos esta acción al registro de acciones pasadas.
+                _pastActions.Add(actionType);
+
+                for (int i = 0; i < _pastActions.Count; i++)
+                {
+                    Debug.Log($"action of time: {i} was: {_pastActions[i]}");
+                }
+
+                // Después de lanzar el golpe, activamos el timer de "ya no puedes volver a atacar hasta después de cierto tiempo"
+                lastAttackTime = Time.time;
+                return true; // sí se ejecutó la acción.
+            }
+        }
+
+        return false;
+    }
+
+    private bool TryBasicMeleeAttack()
+    {
+        return TryAttack(ref _lastBasicAttackTime, _enemyOwner.GetMeleeBasicAttackRate(),
+            _enemyOwner.GetMeleeBasicAttackRange(), MeleeActions.BasicMeleeAttack, _meleeBasicAttackAnimatorHash);
+    }
+
+    private bool TryAreaAttack()
+    {
+        return TryAttack(ref _lastAreaAttackTime, _enemyOwner.GetMeleeAreaAttackRate(),
+            _enemyOwner.GetMeleeAreaAttackRange(), MeleeActions.AreaMeleeAttack, _meleeAreaAttackAnimatorHash);
+    }
+
+    private bool TryDashAttack()
+    {
+        return TryAttack(ref _lastDashAttackTime, _enemyOwner.GetMeleeDashAttackRate(),
+            _enemyOwner.GetMeleeDashAttackRange(), MeleeActions.DashMeleeAttack, _meleeDashAttackAnimatorHash);
+    }
+    
+    private bool TryUltimateAttack()
+    {
+        return TryAttack(ref _lastUltimateAttackTime, _enemyOwner.GetMeleeUltimateAttackRate(),
+            _enemyOwner.GetMeleeUltimateAttackRange(), MeleeActions.MeleeUltimateAttack, _meleeUltimateAttackAnimatorHash);
     }
 
     public override void OnExit()

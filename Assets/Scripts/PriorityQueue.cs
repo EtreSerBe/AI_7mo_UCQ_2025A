@@ -19,7 +19,7 @@ public class PriorityQueue
         LinkedListNode<Node> currentNode = nodes.First;
         while(currentNode != null)
         {
-            // checa cuál es su prioridad. Si la del current node es mayor que la del que estamos tratando de insertar
+            // checa cuÃ¡l es su prioridad. Si la del current node es mayor que la del que estamos tratando de insertar
             // entonces ponemos al nuevo antes que este currentNode.
             if(currentNode.Value.priority > priority)
             {
@@ -32,7 +32,7 @@ public class PriorityQueue
             currentNode = currentNode.Next;
         }
 
-        // en este punto el nodo nuevo es el menos prioritario, y por lo tanto se añade al final de la queue.
+        // en este punto el nodo nuevo es el menos prioritario, y por lo tanto se aÃ±ade al final de la queue.
         nodes.AddLast(node);
     }
 

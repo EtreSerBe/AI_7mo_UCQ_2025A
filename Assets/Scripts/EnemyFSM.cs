@@ -25,7 +25,7 @@ public class EnemyFSM : BaseFSM
     private IdleState _idleState;
 
     private MeleeState _meleeState;
-    // private RangedState _rangedState;
+    private RangedState _rangedState;
     // private InvincibleState _invincibleState;
 
     public IdleState GetIdleState()
@@ -38,6 +38,11 @@ public class EnemyFSM : BaseFSM
         return _meleeState;
     }
 
+    public RangedState GetRangedState()
+    {
+        return _rangedState;
+    }
+    
     // En las clases hijas de BaseFSM siempre se manda a llamar el Initialize justo dentro del Start
     protected override void Initialize()
     {
@@ -60,6 +65,9 @@ public class EnemyFSM : BaseFSM
         
         _meleeState = gameObject.AddComponent<MeleeState>();
         _meleeState.Initialize(this, enemyOwner, playerRef);
+        
+        _rangedState = gameObject.AddComponent<RangedState>();
+        _rangedState.Initialize(this, enemyOwner, playerRef);
     }
 
     protected override BaseState GetInitialState()

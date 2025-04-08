@@ -245,7 +245,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!136 &520958509
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -366,6 +366,15 @@ MonoBehaviour:
   maxHP: 20
   attackDamage: 1
   _visionRadius: 15
+  _meleeBasicAttackDamage: 3
+  _meleeBasicAttackRange: 5
+  _meleeBasicAttackRate: 2
+  _meleeAreaAttackDamage: 8
+  _meleeAreaAttackRange: 10
+  _meleeAreaAttackRate: 5
+  _meleeDashAttackDamage: 8
+  _meleeDashAttackRange: 10
+  _meleeDashAttackRate: 5
 --- !u!195 &520958515
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -386,6 +395,33 @@ NavMeshAgent:
   m_AutoRepath: 1
   m_Height: 2
   m_BaseOffset: 1
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!1 &872054235 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8770792609654793171, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+  m_PrefabInstance: {fileID: 6979438627959381308}
+  m_PrefabAsset: {fileID: 0}
+--- !u!195 &872054236
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 872054235}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
 --- !u!1 &1043690963
@@ -1170,6 +1206,80 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2083230038}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &6979438627959381308
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1269273217587801620, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: playerRef
+      value: 
+      objectReference: {fileID: 1139338670}
+    - target: {fileID: 2599668871826105107, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_WarningMessage
+      value: "\nBinding warning: Some generic clip(s) animate transforms that are
+        already bound by a Humanoid avatar. These transforms can only be changed
+        by Humanoid clips.\n\tFrom animation clip 'great sword casting'"
+      objectReference: {fileID: 0}
+    - target: {fileID: 3541971720159035719, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: _meleeAreaAttackRate
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 8.73
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 11.557
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283190382228420969, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8770792609654793171, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: m_Name
+      value: Maria WProp J J Ong
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8770792609654793171, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 872054236}
+  m_SourcePrefab: {fileID: 100100000, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1180,3 +1290,4 @@ SceneRoots:
   - {fileID: 1139338675}
   - {fileID: 520958512}
   - {fileID: 1227972440}
+  - {fileID: 6979438627959381308}

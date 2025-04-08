@@ -23,10 +23,12 @@ public class BossEnemy : BaseEnemy
     // ya tiene NavMeshAgent dentro, no necesitan redeclararlo aquí.
     private NavMeshAgent _navMeshAgent;
 
-    public NavMeshAgent GetNavMeshAgent()
-    {
-        return _navMeshAgent;
-    }
+    public NavMeshAgent GetNavMeshAgent() { return _navMeshAgent; }
+
+    private Animator _animator;
+
+    public Animator GetAnimator() { return _animator; }
+
 
     [SerializeField]
     private float _visionRadius = 15.0f;
@@ -64,6 +66,38 @@ public class BossEnemy : BaseEnemy
     }
     
     
+    [SerializeField] 
+    private float _meleeDashAttackDamage = 8.0f;
+    [SerializeField] 
+    private float _meleeDashAttackRange = 10.0f;
+    [SerializeField] 
+    private float _meleeDashAttackRate = 5.0f; // te puede atacar máximo una vez cada dos segundos.
+
+    public float GetMeleeDashAttackRange()
+    {
+        return _meleeDashAttackRange;
+    }
+    public float GetMeleeDashAttackRate()
+    {
+        return _meleeDashAttackRate;
+    }
+    
+    [SerializeField] 
+    private float _meleeUltimateAttackDamage = 8.0f;
+    [SerializeField] 
+    private float _meleeUltimateAttackRange = 10.0f;
+    [SerializeField] 
+    private float _meleeUltimateAttackRate = 5.0f; // te puede atacar máximo una vez cada dos segundos.
+
+    public float GetMeleeUltimateAttackRange()
+    {
+        return _meleeUltimateAttackRange;
+    }
+    public float GetMeleeUltimateAttackRate()
+    {
+        return _meleeUltimateAttackRate;
+    }
+    
     private float _rangedAttackDamage = 1.0f;
     private float _rangedAttackRange = 10.0f;
 
@@ -75,7 +109,14 @@ public class BossEnemy : BaseEnemy
         _navMeshAgent = gameObject.GetComponent<NavMeshAgent>();
         if (_navMeshAgent == null)
         {
-            Debug.LogError("No hay Componente de NavMeshAgent asignado a este gameObject. Error grave.");
+            Debug.LogError($"No hay componente de NavMeshAgent asignado a este gameObject {name}. Error grave.");
+            return;
+        }
+        
+        _animator = gameObject.GetComponent<Animator>();
+        if (_animator == null)
+        {
+            Debug.LogError($"No hay componente de Animator asignado a este gameObject {name}. Error grave.");
             return;
         }
     }
