@@ -375,6 +375,9 @@ MonoBehaviour:
   _meleeDashAttackDamage: 8
   _meleeDashAttackRange: 10
   _meleeDashAttackRate: 5
+  _meleeUltimateAttackDamage: 8
+  _meleeUltimateAttackRange: 10
+  _meleeUltimateAttackRate: 5
 --- !u!195 &520958515
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -397,6 +400,71 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!1001 &786546506
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 5.9232774
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 11.479555
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.3964243
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_Name
+      value: Maria WProp J J Ong UNOPTIMIZED
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: ef34726090ec255469defcf9ecc7696d, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d966b8e2baa5a5d4ebd2170ea4bfdcec, type: 3}
 --- !u!1 &872054235 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8770792609654793171, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
@@ -1291,3 +1359,4 @@ SceneRoots:
   - {fileID: 520958512}
   - {fileID: 1227972440}
   - {fileID: 6979438627959381308}
+  - {fileID: 786546506}

@@ -13,6 +13,8 @@ public class MeleeState : BaseState
     // A través de esta referencia nosotros podemos leer o cambiar las variables necesarias de nuestro dueño. 
     private BossEnemy _enemyOwner;
 
+    private MeleeActions _currentMeleeAction = MeleeActions.None;
+    
     private float _lastBasicAttackTime;
     private float _lastAreaAttackTime;
     private float _lastDashAttackTime;
@@ -23,10 +25,12 @@ public class MeleeState : BaseState
     private int _meleeDashAttackAnimatorHash;
     private int _meleeAreaAttackAnimatorHash;
     private int _meleeUltimateAttackAnimatorHash;
+    private int _animatorMovementSpeedHash;
     
     // Cuáles acciones tiene disponibles este estado?
     public enum MeleeActions
     {
+        None,
         BasicMeleeAttack,
         DashMeleeAttack,
         AreaMeleeAttack,
@@ -50,6 +54,8 @@ public class MeleeState : BaseState
         _meleeDashAttackAnimatorHash = Animator.StringToHash("DashAttack");
         _meleeAreaAttackAnimatorHash = Animator.StringToHash("AreaAttack");
         _meleeUltimateAttackAnimatorHash = Animator.StringToHash("UltimateAttack");
+        _animatorMovementSpeedHash = Animator.StringToHash("MovementSpeed");
+
     }
 
     public override void OnUpdate()
@@ -58,6 +64,10 @@ public class MeleeState : BaseState
         // A nuestro dueño le decimos que se acerque a su Player objetivo.
         _enemyOwner.GetNavMeshAgent().destination = _playerRef.transform.position;
 
+        Vector2 horizontalVelocity = new Vector2(_enemyOwner.GetNavMeshAgent().velocity.x,
+            _enemyOwner.GetNavMeshAgent().velocity.z); 
+        _enemyOwner.GetAnimator().SetFloat(_animatorMovementSpeedHash, horizontalVelocity.magnitude);
+        
         // EJEMPLOTE:
         // Si después de todas las acciones de un combo X, el player no sufrió nada de daño
         // entonces, aplicar ataque especial Y.
@@ -73,7 +83,13 @@ public class MeleeState : BaseState
         //             return;
         //     }
         // }
-        
+
+        // No permitimos que se ejecute ningún otro ataque mientras no se haya terminado la animación del ataque actual.
+        // Esto porque en mi diseño yo decidí que los ataques de MeleeActions son mutuamente excluyentes, es decir, 
+        // solo pueda estar activo uno de ellos a la vez. Si ustedes tienen algún comportamiento que no es mutuamente 
+        // excluyente, entonces ese probablemente debería ir antes de este if-return.
+        if (_currentMeleeAction != MeleeActions.None)
+            return;
         
         // Primero tenemos que checar que SÍ haya una acción pasada antes de checar si la acción pasada fue un melee básico.
         if (_pastActions.Count > 0)
@@ -85,11 +101,8 @@ public class MeleeState : BaseState
                 if (TryUltimateAttack())
                 {
                     // La clave para que esto funcione bien es que esta transición se haga DESPUÉS de terminar el 
-                    // ultimate.
-                    
-                    // Después de hacer el ultimate, hacemos el cambio de estado al estado Ranged.
-                    EnemyFSM ownerFsm = (EnemyFSM)OwnerFSMRef;
-                    OwnerFSMRef.ChangeState(ownerFsm.GetRangedState());
+                    // ultimate. Para ello, hice una función específica adicional que se manda a llamar con un 
+                    // animation event de la animación del Ultimate.
                     return;
                 }
             }
@@ -153,15 +166,20 @@ public class MeleeState : BaseState
 
     }
 
-    public void BeginMeleeBasicAttackActiveFrames()
+    // Esta función se llama como un animation event en las animaciones de ataques. Representa el momento en que 
+    // se encienden los elementos que detectan colisión para hacer daño.
+    public void BeginAttackActiveFrames(string attackName)
     {
-        Debug.LogWarning("BeginMeleeBasicAttackActiveFrames");
+        Debug.LogWarning($"BeginAttackActiveFrames for attack: {attackName}");
     }
     
-    public void EndMeleeBasicAttackActiveFrames()
+    // Esta función se llama como un animation event en las animaciones de ataques. Representa el momento en que 
+    // se desactivan los elementos que detectan colisión para hacer daño, y por lo tanto ya no hace daño.
+    public void EndAttackActiveFrames(string attackName)
     {
-        Debug.LogWarning("EndMeleeBasicAttackActiveFrames");
+        Debug.LogWarning($"EndAttackActiveFrames for attack: {attackName}");
     }
+    
 
     // Tiempo en que se usó este ataque la última vez.
     // la cadencia/ritmo en que se puede hacer este ataque
@@ -181,6 +199,7 @@ public class MeleeState : BaseState
                     $"el agente: {gameObject.name} atacó al player {_playerRef.name} con un ataque melee de {actionType}.");
 
                 _enemyOwner.GetAnimator().SetTrigger(attackTriggerHash);
+                _currentMeleeAction = actionType; // IMPORTANTE: setear que actualmente se está ejecutando esta acción.
                 
                 // Añadimos esta acción al registro de acciones pasadas.
                 _pastActions.Add(actionType);
@@ -221,6 +240,22 @@ public class MeleeState : BaseState
     {
         return TryAttack(ref _lastUltimateAttackTime, _enemyOwner.GetMeleeUltimateAttackRate(),
             _enemyOwner.GetMeleeUltimateAttackRange(), MeleeActions.MeleeUltimateAttack, _meleeUltimateAttackAnimatorHash);
+    }
+    
+    // This method is called in animation events of attack animations.
+    public void FinishedAttackEvent(string attackName)
+    {
+        Debug.Log($"finished the animation for attack: {attackName}");
+        // quitamos la variable de que se está ejecutando dicha acción. Con eso ya se podrá elegir una nueva acción.
+        _currentMeleeAction = MeleeActions.None; 
+    }
+
+    // No recibe nada, pues ahorita únicamente la necesito para salir del estado melee y entrar al Ranged.
+    public void FinishedUltimateAttackEvent()
+    {
+        // Después de hacer el ultimate, hacemos el cambio de estado al estado Ranged.
+        EnemyFSM ownerFsm = (EnemyFSM)OwnerFSMRef;
+        OwnerFSMRef.ChangeState(ownerFsm.GetRangedState());
     }
 
     public override void OnExit()
