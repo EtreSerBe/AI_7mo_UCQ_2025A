@@ -14,6 +14,8 @@ public class MeleeState : BaseState
     private BossEnemy _enemyOwner;
 
     private MeleeActions _currentMeleeAction = MeleeActions.None;
+
+    [SerializeField] private LayerMask _meleeAttackLayerMask;
     
     private float _lastBasicAttackTime;
     private float _lastAreaAttackTime;
@@ -55,7 +57,7 @@ public class MeleeState : BaseState
         _meleeAreaAttackAnimatorHash = Animator.StringToHash("AreaAttack");
         _meleeUltimateAttackAnimatorHash = Animator.StringToHash("UltimateAttack");
         _animatorMovementSpeedHash = Animator.StringToHash("MovementSpeed");
-
+        _meleeAttackLayerMask += LayerMask.NameToLayer("Player"); // quiero colisionar contra el player, así que añado esto.
     }
 
     public override void OnUpdate()
@@ -164,6 +166,19 @@ public class MeleeState : BaseState
             return; // La regla es: tú pones change state? la siguiente línea debe ser return.
         }
 
+
+        // float accumulatedTime += Time.deltaTime;
+        // float rand = Random.Range(0, 1);
+        // if (rand + accumulatedTime > RushProbability )
+        // {
+        //     // haces el rush
+        //     accumulatedTime = 0;
+        // }
+        //
+        // rushDelayTime = 1.0;
+        // rand = Random.Range(0, rushDelayTime);
+        // Invoke(RushCoroutine, rand);
+        // StartCoroutine(RushCoroutine, ren)
     }
 
     // Esta función se llama como un animation event en las animaciones de ataques. Representa el momento en que 
@@ -171,6 +186,8 @@ public class MeleeState : BaseState
     public void BeginAttackActiveFrames(string attackName)
     {
         Debug.LogWarning($"BeginAttackActiveFrames for attack: {attackName}");
+        // Activa 
+        _enemyOwner.ToggleSwordCollider(true);
     }
     
     // Esta función se llama como un animation event en las animaciones de ataques. Representa el momento en que 
@@ -178,6 +195,7 @@ public class MeleeState : BaseState
     public void EndAttackActiveFrames(string attackName)
     {
         Debug.LogWarning($"EndAttackActiveFrames for attack: {attackName}");
+        _enemyOwner.ToggleSwordCollider(false);
     }
     
 
@@ -262,5 +280,35 @@ public class MeleeState : BaseState
     {
         // olvidar todas las secuencias de acciones anteriores que se realizaron en este estado.
         _pastActions.Clear();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        var maskValue = 1 << other.gameObject.layer;
+        var maskANDmaskValue = (maskValue & _meleeAttackLayerMask.value);
+
+        // esto es una sola comprobaci�n para filtrar todas las capas que no nos interesan.
+        if (maskANDmaskValue > 0)
+        {
+            // Hacemos lo que corresponda según la layer a que golpeamos.
+            // Si sí fue el player, le hacemos daño.
+            Debug.Log($"Hicimos daño al player con el ataque: {nameof(_currentMeleeAction)}");
+
+            switch (_currentMeleeAction)
+            {
+                case MeleeActions.AreaMeleeAttack:
+                    Debug.Log($"Hicimos 20 de daño al player con el ataque: {nameof(_currentMeleeAction)}");
+                    break;
+                case MeleeActions.BasicMeleeAttack:
+                    Debug.Log($"Hicimos 5 de daño al player con el ataque: {nameof(_currentMeleeAction)}");
+                    break;
+                case MeleeActions.DashMeleeAttack:
+                    Debug.Log($"Hicimos 12 daño al player con el ataque: {nameof(_currentMeleeAction)}");
+                    break;
+                case MeleeActions.MeleeUltimateAttack:
+                    Debug.Log($"Hicimos 45 daño al player con el ataque: {nameof(_currentMeleeAction)}");
+                    break;
+            }
+        }
     }
 }

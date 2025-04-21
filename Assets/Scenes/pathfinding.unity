@@ -119,6 +119,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &309203673
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 309203674}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &309203674
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309203673}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.951037, y: 13.047704, z: -0.09903141}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &421938461
 GameObject:
   m_ObjectHideFlags: 0
@@ -365,6 +396,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHP: 20
   attackDamage: 1
+  _swordCollider: {fileID: 0}
   _visionRadius: 15
   _meleeBasicAttackDamage: 3
   _meleeBasicAttackRange: 5
@@ -779,7 +811,7 @@ GameObject:
   - component: {fileID: 1139338673}
   - component: {fileID: 1139338672}
   - component: {fileID: 1139338671}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1055,6 +1087,61 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1885094471
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1885094472}
+  - component: {fileID: 1885094473}
+  m_Layer: 6
+  m_Name: SwordCollider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1885094472
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885094471}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5752288, y: 0.17636658, z: -0.20120695, w: 0.77299577}
+  m_LocalPosition: {x: 1.02, y: 0.52, z: 0.39}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6979438627959381309}
+  m_LocalEulerAnglesHint: {x: 73.795, y: 8.486, z: -22.804}
+--- !u!136 &1885094473
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885094471}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Radius: 0.12
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1901804726
 GameObject:
   m_ObjectHideFlags: 0
@@ -1288,10 +1375,12 @@ PrefabInstance:
       objectReference: {fileID: 1139338670}
     - target: {fileID: 2599668871826105107, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
       propertyPath: m_WarningMessage
-      value: "\nBinding warning: Some generic clip(s) animate transforms that are
-        already bound by a Humanoid avatar. These transforms can only be changed
-        by Humanoid clips.\n\tFrom animation clip 'great sword casting'"
+      value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 3541971720159035719, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      propertyPath: _swordCollider
+      value: 
+      objectReference: {fileID: 1885094473}
     - target: {fileID: 3541971720159035719, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
       propertyPath: _meleeAreaAttackRate
       value: 2
@@ -1342,12 +1431,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8310285007746968, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1885094472}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8770792609654793171, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
       insertIndex: -1
       addedObject: {fileID: 872054236}
   m_SourcePrefab: {fileID: 100100000, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+--- !u!4 &6979438627959381309 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8310285007746968, guid: c6374346f666aca488b0f1661f1cd814, type: 3}
+  m_PrefabInstance: {fileID: 6979438627959381308}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1360,3 +1457,4 @@ SceneRoots:
   - {fileID: 1227972440}
   - {fileID: 6979438627959381308}
   - {fileID: 786546506}
+  - {fileID: 309203674}

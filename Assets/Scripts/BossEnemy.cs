@@ -29,6 +29,13 @@ public class BossEnemy : BaseEnemy
 
     public Animator GetAnimator() { return _animator; }
 
+    [SerializeField] private Collider _swordCollider;
+
+    public void ToggleSwordCollider(bool enable)
+    {
+        _swordCollider.enabled = enable;
+    }
+    
 
     [SerializeField]
     private float _visionRadius = 15.0f;
