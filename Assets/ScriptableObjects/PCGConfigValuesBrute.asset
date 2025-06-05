@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10fd90939e42d4d409c0ab2a99fb2155, type: 3}
+  m_Name: PCGConfigValuesBrute
+  m_EditorClassIdentifier: 
+  MinHp: 100
+  MaxHp: 200
+  MinDamage: 20
+  MaxDamage: 100
+  MinAttackRate: 6
+  MaxAttackRate: 2
+  MinAttackRange: 0.1
+  MaxAttackRange: 5
+  MinMovementSpeed: 3
+  MaxMovementSpeed: 5
+  HpRange: 100
+  DamageRange: 80
+  AttackRateRange: -4
+  AttackRangeRange: 4.9
+  MovementSpeedRange: 2
+  StepCount: 10
+  HpStepDistance: Infinity
+  DamageStepDistance: Infinity
+  AttackRateStepDistance: -Infinity
+  AttackRangeStepDistance: Infinity
+  MovementSpeedStepDistance: Infinity
