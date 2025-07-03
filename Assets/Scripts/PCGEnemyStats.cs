@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
@@ -6,6 +7,7 @@ using UnityEngine.InputSystem.Controls;
 using Random = UnityEngine.Random;
 
 // importante que NO herede de Monobehavior para que podamos hacerle New.
+[Serializable]
 public class PCGEnemyStats
 {
     public float HP;
@@ -88,20 +90,38 @@ public class PCGEnemyStats
     {
         return FeaturesAsVectorNorm;
     }
+
+    public void SetFeaturesAsNormVector(float[] features)
+    {
+        HPNorm = features[0];
+        DamageNorm = features[1];
+        AttackRateNorm = features[2];
+        AttackRangeNorm = features[3];
+        MovementSpeedNorm = features[4];
+    }
     
     public void PrintStats()
     {
         Debug.Log($"los stats de esta unidad son: HP = {HP}, Damage: {Damage}, AttackRate: {AttackRate}, AttackRange: {AttackRange}, MovementSpeed: {MovementSpeed}" );
     }
+
+    // nada más le pongo ese parámetro porque no quiero que haya constructor vacío.
+    public PCGEnemyStats(bool IsForCrossover)
+    {
+        
+    }
+
     
     // Constructor para copiar valores
     public PCGEnemyStats(PCGEnemyStats entity)
     {
-        HP = entity.HP;
-        Damage = entity.Damage;
-        AttackRate = entity.AttackRate;
-        AttackRange = entity.AttackRange;
-        MovementSpeed = entity.MovementSpeed;
+        // LE PONGO QUE NO LOS COPIE PORQUE AL FINAL DEL PROCESO GENERATIVO ES CUANDO SE LE DARÁN ESOS VALORES
+        // REALMENTE, CON BASE EN LOS VALORES NORMALIZADOS.
+        // HP = entity.HP;
+        // Damage = entity.Damage;
+        // AttackRate = entity.AttackRate;
+        // AttackRange = entity.AttackRange;
+        // MovementSpeed = entity.MovementSpeed;
         _configValuesScriptableObject = entity._configValuesScriptableObject;
         
         HPNorm = entity.HPNorm;
@@ -111,6 +131,22 @@ public class PCGEnemyStats
         MovementSpeedNorm = entity.MovementSpeedNorm;
         
         FeaturesAsVectorNorm = new float [5] {HPNorm, DamageNorm, AttackRateNorm, AttackRangeNorm, MovementSpeedNorm};
+    }
+
+    // Recalculamos sus características des-normalizándolas, para que tengan los valores útiles para el gameplay.
+    public void UpdateStatsBasedOnNormalized()
+    {
+        HP = HPNorm * (_configValuesScriptableObject.MaxHp - _configValuesScriptableObject.MinHp) +
+             _configValuesScriptableObject.MinHp;
+
+        Damage = DamageNorm * (_configValuesScriptableObject.MaxDamage - _configValuesScriptableObject.MinDamage) +
+             _configValuesScriptableObject.MinDamage;
+        AttackRate = AttackRateNorm * (_configValuesScriptableObject.MaxAttackRate - _configValuesScriptableObject.MinAttackRate) +
+             _configValuesScriptableObject.MinAttackRate;
+        AttackRange = AttackRangeNorm * (_configValuesScriptableObject.MaxAttackRange - _configValuesScriptableObject.MinAttackRange) +
+             _configValuesScriptableObject.MinAttackRange;
+        MovementSpeed = MovementSpeedNorm * (_configValuesScriptableObject.MaxMovementSpeed - _configValuesScriptableObject.MinMovementSpeed) +
+                        _configValuesScriptableObject.MinMovementSpeed;
     }
     
     // tipo de movimiento, por ejemplo, que te persiga, que huya, que no se mueva, que se mueva en zig-zag, que patrulle un área, etc.
@@ -123,6 +159,20 @@ public class PCGEnemyStats
     {
         return HP + Damage + AttackRate + AttackRange + MovementSpeed;
     }
+    
+    public float GetDifficultyV2()
+    {
+        return (HPNorm + DamageNorm + AttackRateNorm + AttackRangeNorm + MovementSpeedNorm)/5.0f;
+    }
+
+    public float GetBalance()
+    {
+        float value = HPNorm - 0.5f + DamageNorm - 0.5f + AttackRateNorm - 0.5f + AttackRangeNorm - 0.5f +
+            MovementSpeedNorm - 0.5f;
+        return 1.0f - Mathf.Abs(Mathf.Clamp(value, -1, 1));
+    }
+    
+    
 
     // Vamos a poner que hay 10 pasos por eje.
     public List<PCGEnemyStats> GetNeighbors()
@@ -136,37 +186,52 @@ public class PCGEnemyStats
         
         // Eje HP.
         PCGEnemyStats neighborHPMinus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en HP.
-        neighborHPMinus.HP = math.max(neighborHPMinus.HP - _configValuesScriptableObject.HpStepDistance, _configValuesScriptableObject.MinHp); // que lo mínimo que pueda tener sea el mínimo del rango.
+        neighborHPMinus.HPNorm = math.max(neighborHPMinus.HPNorm - _configValuesScriptableObject.HpStepDistanceNorm, 0.0f); // que lo mínimo que pueda tener sea el mínimo del rango.
         result.Add(neighborHPMinus);
         
         PCGEnemyStats neighborHPPlus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en HP.
-        neighborHPPlus.HP = math.min(neighborHPPlus.HP + _configValuesScriptableObject.HpStepDistance , _configValuesScriptableObject.MaxHp);
+        neighborHPPlus.HPNorm = math.min(neighborHPPlus.HPNorm + _configValuesScriptableObject.HpStepDistanceNorm , 1.0f);
         result.Add(neighborHPPlus);
         
         // si nos fuéramos a salir del rango de ese eje, hay de dos: o lo limitas al rango o lo descartas
         // ahorita vamos a limitarlo al rango.
         
         // Eje Damage.
-        PCGEnemyStats neighborDamageMinus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en HP.
-        neighborDamageMinus.Damage = math.max(neighborDamageMinus.Damage - _configValuesScriptableObject.DamageStepDistance, _configValuesScriptableObject.MinDamage); // que lo mínimo que pueda tener sea el mínimo del rango.
+        PCGEnemyStats neighborDamageMinus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en Damage.
+        neighborDamageMinus.DamageNorm = math.max(neighborDamageMinus.DamageNorm - _configValuesScriptableObject.DamageStepDistanceNorm, 0.0f); // que lo mínimo que pueda tener sea el mínimo del rango.
         result.Add(neighborDamageMinus);
         
-        PCGEnemyStats neighborDamagePlus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en HP.
-        neighborDamagePlus.Damage = math.min(neighborDamagePlus.Damage + _configValuesScriptableObject.DamageStepDistance , _configValuesScriptableObject.MaxDamage);
+        PCGEnemyStats neighborDamagePlus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en Damage.
+        neighborDamagePlus.DamageNorm = math.min(neighborDamagePlus.DamageNorm + _configValuesScriptableObject.DamageStepDistanceNorm , 1.0f);
         result.Add(neighborDamagePlus);
 
         // Eje Attack Rate.
-        PCGEnemyStats neighborAttackRateMinus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en HP.
-        neighborAttackRateMinus.AttackRate = math.max(neighborAttackRateMinus.AttackRate - _configValuesScriptableObject.AttackRateStepDistance, _configValuesScriptableObject.MinAttackRate); // que lo mínimo que pueda tener sea el mínimo del rango.
+        PCGEnemyStats neighborAttackRateMinus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en Attack Rate.
+        neighborAttackRateMinus.AttackRateNorm = math.max(neighborAttackRateMinus.AttackRateNorm - _configValuesScriptableObject.AttackRateStepDistanceNorm, 0.0f); // que lo mínimo que pueda tener sea el mínimo del rango.
         result.Add(neighborAttackRateMinus);
         
-        PCGEnemyStats neighborAttackRatePlus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en HP.
-        neighborAttackRatePlus.AttackRate = math.min(neighborAttackRatePlus.AttackRate + _configValuesScriptableObject.AttackRateStepDistance , _configValuesScriptableObject.MaxAttackRate);
+        PCGEnemyStats neighborAttackRatePlus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en Attack Rate.
+        neighborAttackRatePlus.AttackRateNorm = math.min(neighborAttackRatePlus.AttackRateNorm + _configValuesScriptableObject.AttackRateStepDistanceNorm, 1.0f);
         result.Add(neighborAttackRatePlus);
         
 
-        // FALTAN ATTACK RANGE Y MOVEMENT SPEED.
+        // ATTACK RANGE 
+        PCGEnemyStats neighborAttackRangeMinus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en Attack Range.
+        neighborAttackRangeMinus.AttackRangeNorm = math.max(neighborAttackRangeMinus.AttackRangeNorm - _configValuesScriptableObject.AttackRangeStepDistanceNorm, 0.0f); // que lo mínimo que pueda tener sea el mínimo del rango.
+        result.Add(neighborAttackRangeMinus);
         
+        PCGEnemyStats neighborAttackRangePlus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en Attack Range.
+        neighborAttackRangePlus.AttackRangeNorm = math.min(neighborAttackRangePlus.AttackRangeNorm + _configValuesScriptableObject.AttackRangeStepDistanceNorm , 1.0f);
+        result.Add(neighborAttackRangePlus);
+        
+        // MOVEMENT SPEED
+        PCGEnemyStats neighborMoveSpeedMinus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en Movement Speed.
+        neighborMoveSpeedMinus.MovementSpeedNorm = math.max(neighborMoveSpeedMinus.MovementSpeedNorm - _configValuesScriptableObject.MovementSpeedStepDistanceNorm, 0.0f); // que lo mínimo que pueda tener sea el mínimo del rango.
+        result.Add(neighborMoveSpeedMinus);
+        
+        PCGEnemyStats neighborMoveSpeedPlus = new PCGEnemyStats(this); // va a tener lo mismo en todas las características, excepto en Movement speed.
+        neighborMoveSpeedPlus.MovementSpeedNorm = math.min(neighborMoveSpeedPlus.MovementSpeedNorm + _configValuesScriptableObject.MovementSpeedStepDistanceNorm , 1.0f);
+        result.Add(neighborMoveSpeedPlus);
         
         
         return result;

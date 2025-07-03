@@ -25,19 +25,20 @@ public class PCGConfigValuesScriptableObject : ScriptableObject
     [HideInInspector]
     public float MovementSpeedRange;
 
+    
 
     public int StepCount = 1; // podríamos tener un step size o step count por cada eje, ahorita lo pondré igual para todos.
 
     [HideInInspector]
-    public float HpStepDistance;
+    public float HpStepDistanceNorm;
     [HideInInspector]
-    public float DamageStepDistance;
+    public float DamageStepDistanceNorm;
     [HideInInspector]
-    public float AttackRateStepDistance;
+    public float AttackRateStepDistanceNorm;
     [HideInInspector]
-    public float AttackRangeStepDistance;
+    public float AttackRangeStepDistanceNorm;
     [HideInInspector]
-    public float MovementSpeedStepDistance;
+    public float MovementSpeedStepDistanceNorm;
 
 
 
@@ -49,11 +50,11 @@ public class PCGConfigValuesScriptableObject : ScriptableObject
         AttackRangeRange = MaxAttackRange - MinAttackRange;
         MovementSpeedRange = MaxMovementSpeed - MinMovementSpeed;
 
-        HpStepDistance = HpRange / StepCount;
-        DamageStepDistance = DamageRange / StepCount;
-        AttackRateStepDistance = AttackRateRange / StepCount;
-        AttackRangeStepDistance = AttackRangeRange / StepCount;
-        MovementSpeedStepDistance = MovementSpeedRange / StepCount;
+        HpStepDistanceNorm = 1.0f / StepCount;
+        DamageStepDistanceNorm = 1.0f / StepCount;
+        AttackRateStepDistanceNorm = 1.0f / StepCount;
+        AttackRangeStepDistanceNorm = 1.0f / StepCount;
+        MovementSpeedStepDistanceNorm = 1.0f / StepCount;
     }
     
 

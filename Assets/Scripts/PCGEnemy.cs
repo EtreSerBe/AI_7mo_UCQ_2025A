@@ -16,6 +16,7 @@ public class PCGEnemy : MonoBehaviour
     
     // todos aquellos que puedan necesitar de estos stats, los accederían de aquí.
     
+    [SerializeField]
     private PCGEnemyStats _stats;
 
     // _configValues sería los rangos válidos de configuración para la categoría de enemigos en cuestión.
@@ -29,6 +30,7 @@ public class PCGEnemy : MonoBehaviour
     
     public void SetStats(PCGEnemyStats stats)
     {
+        stats.UpdateStatsBasedOnNormalized();
         _stats = stats;
     }
     
