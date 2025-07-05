@@ -167,8 +167,10 @@ public class PCGEnemyStats
 
     public float GetBalance()
     {
-        float value = HPNorm - 0.5f + DamageNorm - 0.5f + AttackRateNorm - 0.5f + AttackRangeNorm - 0.5f +
-            MovementSpeedNorm - 0.5f;
+        float functionRange = 0.5f * 5; 
+        // NOTA: Me faltaba normalizar antes de hacer el Clamp.
+        float value = (HPNorm - 0.5f + DamageNorm - 0.5f + AttackRateNorm - 0.5f + AttackRangeNorm - 0.5f +
+            MovementSpeedNorm - 0.5f) / functionRange;
         return 1.0f - Mathf.Abs(Mathf.Clamp(value, -1, 1));
     }
     

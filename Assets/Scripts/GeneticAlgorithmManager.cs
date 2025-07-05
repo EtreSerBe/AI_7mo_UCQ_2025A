@@ -1,12 +1,32 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
+using Random = UnityEngine.Random;
+
+
+class DescendingComparer<T> : IComparer<T> where T : IComparable<T> {
+    public int Compare(T x, T y) {
+        return y.CompareTo(x);
+    }
+}
+
 
 public class GeneticAlgorithmManager : MonoBehaviour
 {
+    private enum ECrossoverAlgorithm : byte
+    {
+        RandomCrossover,
+        HalfAndHalfParentCrossover,
+    }
+
+    [SerializeField] private ECrossoverAlgorithm selectedCrossoverAlgorithm = ECrossoverAlgorithm.RandomCrossover;
+    
+    [SerializeField] private int geneticAlgorithmIterations = 30;
+    
     [SerializeField]
-    private float difficultyScoreWeight = 0.85f;
+    private float difficultyScoreWeight = 0.5f;
 
     // cuántos elementos van a generarse con el algoritmo genético
     [SerializeField] private int populationSize = 20;
@@ -17,7 +37,7 @@ public class GeneticAlgorithmManager : MonoBehaviour
 
     [SerializeField] private List<PCGEnemyStats> finalEntitiesList;
     
-    List<PCGEnemyStats> GeneticAlgorithmInitialization( PCGEnemy enemyDefinition, int numberOfEntities )
+    private List<PCGEnemyStats> GeneticAlgorithmInitialization( PCGEnemy enemyDefinition, int numberOfEntities )
     {
         // vamos a crear N entidades y las vamos a guardar en un contenedor (estructura de datos)
         List<PCGEnemyStats> initialEntities = new List<PCGEnemyStats>();
@@ -32,11 +52,11 @@ public class GeneticAlgorithmManager : MonoBehaviour
         return initialEntities;
     }
 
-    List<PCGEnemyStats> GeneticAlgorithmFitnessAssignment(List<PCGEnemyStats> entitiesList )
+    private List<PCGEnemyStats> GeneticAlgorithmFitnessAssignment(List<PCGEnemyStats> entitiesList )
     {
-        // simplemente tomamos todas las entidades que se tengan y las ordenamos por su fitness usando esta estructura
+        // Simplemente tomamos todas las entidades que se tengan y las ordenamos por su fitness usando esta estructura
         // de datos llamada sorted dictionary.
-        SortedDictionary<float, PCGEnemyStats> sortedEntities = new SortedDictionary<float, PCGEnemyStats>();
+        SortedDictionary<float, PCGEnemyStats> sortedEntities = new SortedDictionary<float, PCGEnemyStats>(new DescendingComparer<float>());
         foreach (var entity in entitiesList)
         {
             float totalScore = GetTotalScore(entity);
@@ -49,15 +69,16 @@ public class GeneticAlgorithmManager : MonoBehaviour
         // obtenemos las entidades ordenadas pero ya solo como una lista normalita.
         List<PCGEnemyStats> result = new List<PCGEnemyStats>(sortedEntities.Values.ToArray());
         
-        foreach (var entity in result)
-        {
-            float totalScore = GetTotalScore(entity);
-            Debug.Log($"las entidades tras ser ordenadas son: {totalScore}");
-        }
+        // SOLO PARA MOTIVOS DE DEBUG.
+        // foreach (var entity in result)
+        // {
+        //     float totalScore = GetTotalScore(entity);
+        //     Debug.Log($"las entidades tras ser ordenadas son: {totalScore}");
+        // }
         return result;
     }
 
-    List<PCGEnemyStats> GeneticAlgorithmSelection(List<PCGEnemyStats> entitiesByFitness, int topNElements)
+    private List<PCGEnemyStats> GeneticAlgorithmSelection(List<PCGEnemyStats> entitiesByFitness, int topNElements)
     {
         List<PCGEnemyStats> selectedEntities = entitiesByFitness.GetRange(0, topNElements); 
         // solamente tomamos los N-mejores elementos de todos los que teníamos y ya.
@@ -65,7 +86,7 @@ public class GeneticAlgorithmManager : MonoBehaviour
     }
 
     // NOTA: Por el momento crossover y mutación se hacen ambas aquí dentro.
-    List<PCGEnemyStats> GeneticAlgorithmCrossover(List<PCGEnemyStats> topNEntities)
+    private List<PCGEnemyStats> GeneticAlgorithmCrossover(List<PCGEnemyStats> topNEntities)
     {
         // copiamos los valores que ya trae el parámetro de entrada porque los vamos a necesitar. 
         List<PCGEnemyStats> resultingEntities = new List<PCGEnemyStats>(topNEntities);
@@ -111,8 +132,43 @@ public class GeneticAlgorithmManager : MonoBehaviour
         // 3) todos contra todos sin repetición: es decir, random 1 con random 2, pero después de usarlos los quitas.
 
     }
+    
+    // NOTA: Por el momento crossover y mutación se hacen ambas aquí dentro. Esta versión usa la versión de 
+    // Crossover(PCGEnemyStats parent1, PCGEnemyStats parent2, bool useRandomCrossover = true) pero con el 
+    // parámetro de useRandomCrossover en false para generarlos de manera distinta.
+    private List<PCGEnemyStats> GeneticAlgorithmCrossoverCreateNoRandomCrossover(List<PCGEnemyStats> topNEntities)
+    {
+        // copiamos los valores que ya trae el parámetro de entrada porque los vamos a necesitar. 
+        List<PCGEnemyStats> resultingEntities = new List<PCGEnemyStats>(topNEntities);
+        
+        // Vamos a hacer X entidades nuevas haciendo cruzas entre pares de los topNEntities.
+        // En este caso, cada par de padres van a generar 2 hijos, 
+        // los hijos de Parent1 y Parent2 van a tener los siguientes hijos:
+        // HijoA {HP1, Damage1, Rate1, Range2, MovementSpeed2}
+        // HijoB {HP2, Damage2, Rate2, Range1, MovementSpeed1}
+        
+        for (int i = 0; i < topNEntities.Count; i += 2)
+        {
+            // tomamos al padre i y padre i+1:
+            PCGEnemyStats parentI = topNEntities[i];
+            PCGEnemyStats parentIPlusOne = topNEntities[i+1];
+            // hacemos el crossover
+            // Este sería el HijoA del ejemplo de arriba
+            PCGEnemyStats newChild = Crossover(parentI, parentIPlusOne, false);
+            newChild = Mutation(newChild);
+            resultingEntities.Add(newChild);
+            
+            // Este sería el HijoB del ejemplo de arriba, por eso la mandamos a llamar con parentI y parentIPlusOne invertidos.
+            PCGEnemyStats newChild2 = Crossover(parentIPlusOne, parentI, false);
+            newChild2 = Mutation(newChild2);
+            resultingEntities.Add(newChild2);
+        }
 
-    PCGEnemyStats Crossover(PCGEnemyStats parent1, PCGEnemyStats parent2)
+        return resultingEntities;
+    }
+    
+
+    private PCGEnemyStats Crossover(PCGEnemyStats parent1, PCGEnemyStats parent2, bool useRandomCrossover = true)
     {
         // le pasamos true solo porque no queremos tener un constructor sin parámetros en PCGEnemyStats.
         PCGEnemyStats child = new PCGEnemyStats(true);
@@ -122,18 +178,35 @@ public class GeneticAlgorithmManager : MonoBehaviour
         float []features= child.GetFeaturesVectorNorm();
         float []featuresParent1 = parent1.GetFeaturesVectorNorm();
         float []featuresParent2 = parent2.GetFeaturesVectorNorm();
-
         
-        for (int i = 0; i < features.Length; i++)
+        if(useRandomCrossover)
         {
-            int selectedParent = Random.Range(0, 2); // random de 0 a 1
-            features[i] = selectedParent == 0 ? featuresParent1[i] : featuresParent2[i];
+            // OPCIÓN 1 DE CROSSOVER: 100% random
+            for (int i = 0; i < features.Length; i++)
+            {
+                int selectedParent = Random.Range(0, 2); // random de 0 a 1
+                features[i] = selectedParent == 0 ? featuresParent1[i] : featuresParent2[i];
+            }
+        }
+        else
+        {
+            // OPCIÓN 2 DE CROSSOVER: MITAD DEL PARENT1 Y MITAD DEL PARENT2
+            // por ejemplo, HP, Damage y AttackRate del parent1, y AttackRange y MovementSpeed del parent2.  
+            for (int i = 0; i < features.Length/2; i++)
+            {
+                features[i] = featuresParent1[i];
+            }
+            for (int i = features.Length/2; i < features.Length; i++)
+            {
+                features[i] = featuresParent2[i];
+            }
         }
 
         child.SetFeaturesAsNormVector(features);
         return child;
     }
 
+    
     PCGEnemyStats Mutation(PCGEnemyStats toCopyAndThenMutate)
     {
         // primero hacemos una copia:
@@ -154,8 +227,12 @@ public class GeneticAlgorithmManager : MonoBehaviour
 
     float GetTotalScore( PCGEnemyStats entity)
     {
+        // Difficulty debe acercarse 
         return entity.GetBalance()*(1.0f-difficultyScoreWeight) + entity.GetDifficultyV2()*difficultyScoreWeight;
     }
+    
+    // float GetDifferenceScore()
+    
 
     void RunGeneticAlgorithm()
     {
@@ -166,24 +243,42 @@ public class GeneticAlgorithmManager : MonoBehaviour
 
         List<PCGEnemyStats> evolvedEntities = initialEntities;
 
-        int counter = 0;
-        while (counter < 300)
+        int iterationCounter = 0;
+        while (iterationCounter < geneticAlgorithmIterations)
         {
-            counter++;
+            iterationCounter++;
             List<PCGEnemyStats> sortedEntities = GeneticAlgorithmFitnessAssignment(evolvedEntities);
 
             
             // que me dé la mejor mitad de la población del algoritmo genético.
             List<PCGEnemyStats> selectedEntities = GeneticAlgorithmSelection(sortedEntities, populationSize/2);
 
-            evolvedEntities = GeneticAlgorithmCrossover(selectedEntities);
-            finalEntitiesList = evolvedEntities; // NO IDEAL, HAY QUE CAMBIARLO.
+            switch (selectedCrossoverAlgorithm)
+            {
+                case ECrossoverAlgorithm.RandomCrossover:
+                    evolvedEntities = GeneticAlgorithmCrossover(selectedEntities);
+                    break;
+                case ECrossoverAlgorithm.HalfAndHalfParentCrossover:
+                    evolvedEntities = GeneticAlgorithmCrossoverCreateNoRandomCrossover(selectedEntities);
+                    break;
+                default:
+                    break;
+            }
         }
 
+        // Llamamos a GeneticAlgorithmFitnessAssignment para que nos ordene nuestras entidades
+        finalEntitiesList = GeneticAlgorithmFitnessAssignment(evolvedEntities); // asignamos a la finalEntitiesList con los resultados finales.
+
+        Debug.Log($"las entidades creadas por el algoritmo genético fueron: ");
         foreach (var entity in finalEntitiesList)
         {
+            float difficultyScore = entity.GetDifficultyV2();
+            float balanceScore = entity.GetBalance();
             float totalScore = GetTotalScore(entity);
-            Debug.Log($"las entidades creadas son: {totalScore}");
+            Debug.Log($"TotalScore: {totalScore}; de los cuales, " +
+                      $"DifficultyScore aportó: {difficultyScore * difficultyScoreWeight}; y " +
+                      $" BalanceScore aportó: {balanceScore * (1.0f - difficultyScoreWeight)}. " +
+                      $"Difficulty pura fue: {difficultyScore}; Balance pura fue: {balanceScore}");
         }
     }
     

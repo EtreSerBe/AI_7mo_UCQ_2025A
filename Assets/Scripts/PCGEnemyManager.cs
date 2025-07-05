@@ -21,29 +21,7 @@ public class PCGEnemyManager : MonoBehaviour
     private Dictionary<string, List<PCGEnemyStats>> _existingEnemyCreationsDictionary =
         new Dictionary<string, List<PCGEnemyStats>>();
 
-
-    // Diferencia como distancia euclidiana entre estas dos entidades. Alias, teorema de Pitágoras.
-    float Difference(float[] entity1, float[] entity2, int size)
-    {
-        float result = 0;
-        for (int i = 0; i < size; i++)
-        {
-            result += Mathf.Pow(entity1[i] - entity2[i], 2);
-        }
-        return Mathf.Sqrt(result)/Mathf.Sqrt(size);
-    }
     
-    // Esta es la resta de dos vectores tal cual, la vamos a usar más adelante.
-    float[] Subtract(float[] entity1, float[] entity2, int size)
-    {
-        float[] result = new float[size];
-        for (int i = 0; i < size; i++)
-        {
-            result[i] = entity1[i] - entity2[i];
-        }
-        return result;
-    }
-
 
     bool TryAddNewEnemy(PCGEnemyStats enemy, string enemyType)
     {
@@ -61,7 +39,7 @@ public class PCGEnemyManager : MonoBehaviour
         foreach (var pcgEnemy in _existingEnemyCreationsDictionary[enemyType])
         {
             // calcular diferencia contra enemy
-            float diff = Difference(enemyFeaturesVec, pcgEnemy.GetFeaturesVectorNorm(), size);
+            float diff = Utilities.Difference(enemyFeaturesVec, pcgEnemy.GetFeaturesVectorNorm(), size);
             // si tiene solo 10% o menos de diferencia contra este enemy. Ese 0.1 es un umbral 
             if (diff < 0.3f)
             {
