@@ -55,8 +55,7 @@ public class PCGEnemyStats
     
 
     private PCGConfigValuesScriptableObject _configValuesScriptableObject;
-    
-    
+
     public PCGEnemyStats(PCGConfigValuesScriptableObject configValuesScriptableObject)
     {
         _configValuesScriptableObject = configValuesScriptableObject;

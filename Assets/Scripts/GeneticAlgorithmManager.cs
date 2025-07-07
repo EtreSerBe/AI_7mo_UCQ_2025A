@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 using Random = UnityEngine.Random;
@@ -22,6 +23,16 @@ public class GeneticAlgorithmManager : MonoBehaviour
     }
 
     [SerializeField] private ECrossoverAlgorithm selectedCrossoverAlgorithm = ECrossoverAlgorithm.RandomCrossover;
+
+    private enum EMutationAlgorithm : byte
+    {
+        RandomValue,
+        ControllableValue
+    }
+
+    [SerializeField] private EMutationAlgorithm selectedMutationAlgorithm = EMutationAlgorithm.ControllableValue;
+    [SerializeField] private float controllableMutationStepDistance = 0.1f;
+    
     
     [SerializeField] private int geneticAlgorithmIterations = 30;
     
@@ -102,6 +113,7 @@ public class GeneticAlgorithmManager : MonoBehaviour
             // hacemos el crossover
             PCGEnemyStats newChild = Crossover(parentI, parentIPlusOne);
             newChild = Mutation(newChild);
+            
             resultingEntities.Add(newChild);
         }
         // ya que tenemos hijos de los N mejores, hacemos copias de los N/2 mejores pero con mutaciones.
@@ -110,7 +122,7 @@ public class GeneticAlgorithmManager : MonoBehaviour
             PCGEnemyStats bestI = topNEntities[i];
             // hacemos una copia de él (ya se hace dentro de mutation) y luego le cambiamos una feature al azar por
             // un valor al azar.
-            PCGEnemyStats bestIMutation = Mutation(bestI);
+            PCGEnemyStats bestIMutation = Mutation(bestI); 
             resultingEntities.Add(bestIMutation);
         }
 
@@ -136,7 +148,7 @@ public class GeneticAlgorithmManager : MonoBehaviour
     // NOTA: Por el momento crossover y mutación se hacen ambas aquí dentro. Esta versión usa la versión de 
     // Crossover(PCGEnemyStats parent1, PCGEnemyStats parent2, bool useRandomCrossover = true) pero con el 
     // parámetro de useRandomCrossover en false para generarlos de manera distinta.
-    private List<PCGEnemyStats> GeneticAlgorithmCrossoverCreateNoRandomCrossover(List<PCGEnemyStats> topNEntities)
+    private List<PCGEnemyStats> GeneticAlgorithmCrossoverHalfAndHalf(List<PCGEnemyStats> topNEntities)
     {
         // copiamos los valores que ya trae el parámetro de entrada porque los vamos a necesitar. 
         List<PCGEnemyStats> resultingEntities = new List<PCGEnemyStats>(topNEntities);
@@ -216,6 +228,33 @@ public class GeneticAlgorithmManager : MonoBehaviour
         
         // después, tomamos una de ellas al azar.
         int randomFeature = Random.Range(0, features.Length);
+        
+        switch (selectedMutationAlgorithm)
+        {
+            case EMutationAlgorithm.RandomValue:
+                // y a la que tomamos le damos un valor al azar.
+                features[randomFeature] = Random.Range(0, 1.0f);
+                break;
+            case EMutationAlgorithm.ControllableValue:
+            {
+                int positiveOrNegativeChange = Random.Range(0, 2);
+                if (positiveOrNegativeChange == 0)
+                {
+                    features[randomFeature] += controllableMutationStepDistance;
+                }
+                else
+                {
+                    features[randomFeature] -= controllableMutationStepDistance;
+                }
+
+                // lo limitamos al rango [0,1] porque si no ya no estaría normalizado.
+                features[randomFeature] = Mathf.Clamp01(features[randomFeature]);               
+                break;
+            }
+            default:
+                break;
+        }
+        
         // y a la que tomamos le damos un valor al azar.
         features[randomFeature] = Random.Range(0, 1.0f);
         
@@ -225,6 +264,7 @@ public class GeneticAlgorithmManager : MonoBehaviour
         return newStats;
     }
 
+    
     float GetTotalScore( PCGEnemyStats entity)
     {
         // Difficulty debe acercarse 
@@ -259,7 +299,7 @@ public class GeneticAlgorithmManager : MonoBehaviour
                     evolvedEntities = GeneticAlgorithmCrossover(selectedEntities);
                     break;
                 case ECrossoverAlgorithm.HalfAndHalfParentCrossover:
-                    evolvedEntities = GeneticAlgorithmCrossoverCreateNoRandomCrossover(selectedEntities);
+                    evolvedEntities = GeneticAlgorithmCrossoverHalfAndHalf(selectedEntities);
                     break;
                 default:
                     break;
@@ -281,6 +321,8 @@ public class GeneticAlgorithmManager : MonoBehaviour
                       $"Difficulty pura fue: {difficultyScore}; Balance pura fue: {balanceScore}");
         }
     }
+
+
     
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created

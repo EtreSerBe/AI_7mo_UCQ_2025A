@@ -180,7 +180,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selectedCrossoverAlgorithm: 1
-  geneticAlgorithmIterations: 300
+  selectedMutationAlgorithm: 1
+  controllableMutationStepDistance: 0.1
+  geneticAlgorithmIterations: 3000
   difficultyScoreWeight: 0.5
   populationSize: 20
   enemyDefinitionsList:
