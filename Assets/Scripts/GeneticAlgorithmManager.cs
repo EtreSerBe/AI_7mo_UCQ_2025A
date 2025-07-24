@@ -265,10 +265,16 @@ public class GeneticAlgorithmManager : MonoBehaviour
     }
 
     
-    float GetTotalScore( PCGEnemyStats entity)
+    float GetTotalScore( PCGEnemyStats entity )
     {
+
+        // if (entity.Name == desiredClassName)
+        // {
+        //     return entity.GetBalance()*(1.0f-difficultyScoreWeight) + entity.GetDifficultyV2()*difficultyScoreWeight  + 0.10f;
+        // }
+        
         // Difficulty debe acercarse 
-        return entity.GetBalance()*(1.0f-difficultyScoreWeight) + entity.GetDifficultyV2()*difficultyScoreWeight;
+        return entity.GetBalance()*(1.0f-difficultyScoreWeight) + entity.GetDifficultyV2()*difficultyScoreWeight ;
     }
     
     // float GetDifferenceScore()
