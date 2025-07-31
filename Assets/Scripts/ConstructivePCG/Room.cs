@@ -7,6 +7,16 @@ using UnityEngine;
 
 public class Room
 {
+    // esto es para el ejemplo del powerpoint de PCG Intro
+    public enum EItemType
+    {
+        Flower, 
+        Dirt,
+        Sky,
+        Mushroom,
+        Empty
+    }
+    
     public enum RoomStatus : byte
     {
         NonOccupied, 
@@ -29,6 +39,9 @@ public class Room
     private RoomStatus _occupied = RoomStatus.NonOccupied; // cuando esté occupied, ya no se puede conectar hacia este cuarto.
     public RoomStatus Occupied => _occupied;
 
+    public EItemType currentItemType = EItemType.Empty;
+    // public EItemType ItemType => _itemType;
+    
     public void SetAsInitialRoom()
     {
         _occupied = RoomStatus.Occupied;
